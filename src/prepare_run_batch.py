@@ -1,11 +1,6 @@
-# TODO
 """
-TODO: implement functions to be run on dane/lassen which will set up one batch of runs
-this means we take reference GG-combustor.json file and modify it for each run in the batch, put them into a new directory
+We take reference GG-combustor.json file and modify it for each run in the batch, put them into a new directory
 for each one, and record the mapping from run_id to directory in a csv file.
-
-We assume that this will be executed in a the directory containing CommonCase, GG-combustor-default.json, and
-the database file.
 """
 
 import argparse
@@ -16,15 +11,37 @@ import csv
 # Path to reference config file
 REF_CONFIG = 'GG-combustor-default.json'
 
+# Path to CommonCase BC and grid files (currently hardcoded for me on dane.llnl.gov)
+COMMON_CASE_DIR = '/p/lustre1/cutforth1/PSAAP/'
+
+# Path to dir where runs are executed and output written (again, hardcoded for me on dane.llnl.gov)
+RUN_DIR = '/p/lustre1/cutforth1/PSAAP/'
+
 # Reference length scale [m]
 LREF = 0.003175
 
 
-# Given database file, config file, and batch ID, set everything up for one batch of runs
+def get_path_to_common_case(xi: list) -> Path:
+    common_x_locs = [6.0, 7.0, 8.0, 9.0, 10.0]
+    common_z_locs = [6.0, 13.0, 19.0]
+
+    xi_x = xi[0] / LREF
+    xi_z = xi[2] / LREF
+
+    # Find closest common x and z locations
+    x_idx = min(range(len(common_x_locs)), key=lambda i: abs(common_x_locs[i] - xi_x))
+    z_idx = min(range(len(common_z_locs)), key=lambda i: abs(common_z_locs[i] - xi_z))
+
+    x_str = f'{int(common_x_locs[x_idx]):02d}'
+    z_str = f'{int(common_z_locs[z_idx]):02d}'
+    path = Path(COMMON_CASE_DIR) / f'location_{x_str}_0_{z_str}' / 'CommonCase' / xi[16]
+    assert path.exists(), f"Common case directory {path} does not exist"
+    return path
 
 
 def update_json_data(config: dict, xi: list) -> None:
     """Edit the given JSON data with the sampled parameters."""
+    common_case_dir = get_path_to_common_case(xi)
 
     # Update laser focal location
     config['Flow']['laser']['focalLocation'][0] = xi[0] / LREF
@@ -45,7 +62,7 @@ def update_json_data(config: dict, xi: list) -> None:
     config['Flow']['laser']['pulseFWHM'] = xi[7]
 
     # Update times
-    a = 1000 + xi[13]
+    a = 1000 + xi[14]
     b = a + 2000
     c = b + 2000
     d = c + 2000
@@ -53,11 +70,11 @@ def update_json_data(config: dict, xi: list) -> None:
     config['Integrator']['TimeStep']['zone2'] = b
     config['Integrator']['TimeStep']['zone3'] = c
     config['Integrator']['TimeStep']['zone4'] = d
-    config['Flow']['laser']['pulseTime'] += xi[13] * 0.003
+    config['Flow']['laser']['pulseTime'] += xi[14] * 0.003
     config['Integrator']['TimeStep']['time5'] = 0.002
 
     # Update methane content
-    config['Flow']['initCase']['restartDir'] = f'./../../CommonCase/{xi[15]}/solution/{xi[14]}'
+    config['Flow']['initCase']['restartDir'] = common_case_dir / 'solution' / f'{xi[15]}'
 
     # Update thickened flame parameters
     config['Flow']['TFModel']['Efficiency']['beta'] = xi[8]
@@ -72,10 +89,10 @@ def update_json_data(config: dict, xi: list) -> None:
     config['BC']['xBCLeft']['mDot2'] = xi[13]
 
     # Update file directories
-    config['BC']['xBCLeft']['MixtureProfile']['FileDir'] = f'../../CommonCase/{xi[15]}/bc-6sp'
-    config['BC']['xBCLeft']['TemperatureProfile']['FileDir'] = f'../../CommonCase/{xi[15]}/bc-6sp'
-    config['BC']['xBCLeft']['VelocityProfile']['FileDir'] = f'../../CommonCase/{xi[15]}/bc-6sp'
-    config['Grid']['GridInput']['gridDir'] = f'../../CommonCase/{xi[15]}/bc-6sp/grid'
+    config['BC']['xBCLeft']['MixtureProfile']['FileDir'] = common_case_dir / 'bc-6sp'
+    config['BC']['xBCLeft']['TemperatureProfile']['FileDir'] = common_case_dir / 'bc-6sp'
+    config['BC']['xBCLeft']['VelocityProfile']['FileDir'] = common_case_dir / 'bc-6sp'
+    config['Grid']['GridInput']['gridDir'] = common_case_dir / 'bc-6sp' / 'grid'
 
 
 def parse_args():
@@ -118,28 +135,37 @@ def load_xi_from_database_row(row: list) -> list:
     ]
 
 
+def get_batch_ids(rows: list) -> list:
+    return [int(row[1]) for row in rows]
+
+
 def main():
     args = parse_args()
 
     database_path = Path(args.database)
-    outdir_base = Path(f'runs_{database_path.stem}')
     config_path = Path(REF_CONFIG)
 
     assert database_path.exists(), f"Database file {database_path} does not exist"
-    assert not outdir_base.exists(), f"Output directory {outdir_base} already exists"
     assert config_path.exists(), f"Reference config file {config_path} does not exist"
 
     run_database = read_csv_to_list_of_lists(database_path)
+    batch_ids = get_batch_ids(run_database)
+
+    assert len(set(batch_ids)) == 1, f"Multiple batch IDs found: {set(batch_ids)}"
+    batch_id = batch_ids[0]
+
+    outdir_base = Path(RUN_DIR) / f'runs_batch_{batch_id:04d}'
+    assert not outdir_base.exists(), f"Output directory {outdir_base} already exists"
+    outdir_base.mkdir()
 
     # Load the reference config
     with open(REF_CONFIG, 'r') as f:
         ref_config = json.load(f)
 
-    outdir_base.mkdir()
-
     for row in run_database:
         run_id = int(row[0])
         xi = load_xi_from_database_row(row)
+        assert len(xi) == 16, f"Expected 16 parameters, got {len(xi)}"
 
         run_dir = outdir_base / f'{run_id:04d}'
         run_dir.mkdir()

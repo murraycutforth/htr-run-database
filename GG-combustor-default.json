@@ -101,7 +101,7 @@
         "startIter": 0,
         "implicitChemistry": false,
         "startTime": 0.0,
-        "maxIter": 40000,
+        "maxIter": 38000,
         "EulerScheme": {
             "vorticityScale": 0.5,
             "type": "Hybrid",

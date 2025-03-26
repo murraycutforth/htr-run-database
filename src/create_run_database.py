@@ -119,7 +119,7 @@ def sample_uq_vector_v1(nominal_x: float, nominal_z: float):
     xi.append(np.random.uniform(*PARAM_DISTRIBUTIONS['alpha']))
     xi.append(np.random.uniform(*PARAM_DISTRIBUTIONS['beta']))
     peak_e_dot = get_peak_e_dot(xi[-1])
-    xi.append(peak_e_dot)
+    xi.append(peak_e_dot)  # xi[6]
     xi.append(np.random.uniform(*PARAM_DISTRIBUTIONS['fwhm']))
     xi.append(np.random.uniform(*PARAM_DISTRIBUTIONS['tf_beta']))
     xi.append(np.random.uniform(*PARAM_DISTRIBUTIONS['sL0']))
