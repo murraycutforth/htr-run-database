@@ -21,7 +21,10 @@ elif [ $# -eq 3 ]; then
    jobid_file=$1
    sampledir=$2   
    solutiondir=$3
+   echo "Calling organize-htr.sh with jobid_file=$jobid_file, sampledir=$sampledir, solutiondir=$solutiondir"
 else
+  # Print all args
+   echo "All args: $*"
    echo "Two or more arguments required: (1) job ID number or file, (2) sample directory, (3) solution directory"
    return
 fi

@@ -10,11 +10,11 @@ REF_CONFIG = "GG-combustor.json"
 
 
 def solution_dir(num_iterations: int) -> str:
-    return f"solution_{num_iterations:10d}"
+    return f"solution_{num_iterations:010d}"
 
 
 def get_path_to_restart_dir(num_iterations: int) -> str:
-    return f"solution_{num_iterations:10d}/fluid_iter{num_iterations:10d}"
+    return f"solution_{num_iterations:010d}/fluid_iter{num_iterations:010d}"
 
 
 def update_json_data(config: dict, num_iterations: int) -> None:
@@ -24,8 +24,10 @@ def update_json_data(config: dict, num_iterations: int) -> None:
 def return_slurm_file():
     slurm_file = glob('slurm*')
 
-    if len(slurm_file) > 1:
-        assert (0)
+    if not slurm_file:
+        raise FileNotFoundError("No slurm file found")
+    elif len(slurm_file) > 1:
+        raise RuntimeError("Multiple slurm files found")
 
     return slurm_file
 
