@@ -5,16 +5,14 @@ import sys
 import re
 import json
 from glob import glob
+from pathlib import Path
 
 REF_CONFIG = "GG-combustor.json"
 
 
-def solution_dir(num_iterations: int) -> str:
-    return f"solution_{num_iterations:010d}"
-
-
 def get_path_to_restart_dir(num_iterations: int) -> str:
-    return f"solution_{num_iterations:010d}/fluid_iter{num_iterations:010d}"
+    current_dir_full = os.path.abspath(os.getcwd())
+    return os.path.join(current_dir_full, f'solution/fluid_iter{num_iterations:010d}')
 
 
 def update_json_data(config: dict, num_iterations: int) -> None:
