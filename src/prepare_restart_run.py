@@ -10,11 +10,11 @@ REF_CONFIG = "GG-combustor.json"
 
 
 def solution_dir(num_iterations: int) -> str:
-    return f"solution_{num_iterations:10z}"
+    return f"solution_{num_iterations:10d}"
 
 
 def get_path_to_restart_dir(num_iterations: int) -> str:
-    return f"solution_{num_iterations:10z}/fluid_iter{num_iterations:10z}"
+    return f"solution_{num_iterations:10d}/fluid_iter{num_iterations:10d}"
 
 
 def update_json_data(config: dict, num_iterations: int) -> None:
