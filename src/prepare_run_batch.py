@@ -5,6 +5,7 @@ for each one, and record the mapping from run_id to directory in a csv file.
 
 import argparse
 import json
+import shutil
 from pathlib import Path
 import csv
 import os
@@ -184,9 +185,16 @@ def main():
             f.write('outidr="."')
             f.write('USE_CUDA=0 DEBUG=0 PROFILE=0 QUEUE="pbatch" $HTR_DIR/prometeo.sh -i GG-combustor.json -o "."')
 
+        # Add in copies of the run-htr-with-restarts.sh and prepare_restart_run.py scripts
+        shutil.copy('run-htr-with-restarts.sh', run_dir)
+        shutil.copy('prepare_restart_run.py', run_dir)
+
         # Make executable
         st = os.stat(run_dir / 'run-htr.sh')
         os.chmod(run_dir / 'run-htr.sh', st.st_mode | stat.S_IEXEC)
+
+        st = os.stat(run_dir / 'run-htr-with-restarts.sh')
+        os.chmod(run_dir / 'run-htr-with-restarts.sh', st.st_mode | stat.S_IEXEC)
 
 
 if __name__ == "__main__":
