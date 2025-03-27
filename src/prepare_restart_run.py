@@ -1,9 +1,10 @@
 import os
 import shutil
+import subprocess
 import sys
 import re
 import json
-
+from glob import glob
 
 REF_CONFIG = "GG-combustor.json"
 
@@ -20,6 +21,15 @@ def update_json_data(config: dict, num_iterations: int) -> None:
     config['Flow']['initCase']['restartDir'] = get_path_to_restart_dir(num_iterations)
 
 
+def return_slurm_file():
+    slurm_file = glob('slurm*')
+
+    if len(slurm_file) > 1:
+        assert (0)
+
+    return slurm_file
+
+
 def main():
     if len(sys.argv) != 2:
         raise ValueError("Usage: python prepare_restart_run.py <number of iterations in restart file>")
@@ -33,11 +43,13 @@ def main():
     if not os.path.exists("sample0"):
         raise FileNotFoundError("sample0 directory not found")
 
-    if os.path.exists(solution_dir(num_iterations)):
-        raise FileExistsError(f"{solution_dir(num_iterations)} directory already exists")
+    slurm_file = return_slurm_file()
+    bash_command = ['bash', 'organize-htr.sh', slurm_file[0], 'sample0', 'solution']
+    process = subprocess.Popen(bash_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = process.communicate()
 
-    os.rename("sample0", solution_dir(num_iterations))
-    shutil.copy(REF_CONFIG, f"{solution_dir(num_iterations)}/GG-combustor_{num_iterations}.json")  # Keep record of all config files
+    if process.returncode != 0:
+        raise RuntimeError(f"Command {' '.join(bash_command)} failed with error: {error.decode().strip()}")
 
     # Now update the GG-combustor.json file ready for the next run
 

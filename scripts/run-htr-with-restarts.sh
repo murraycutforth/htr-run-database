@@ -45,10 +45,10 @@ check_job_status() {
 
 # Function to extract the latest checkpoint file
 find_latest_checkpoint() {
-    latest_checkpoint=$(find . -name "./sample0/fluid_iter*" | sort | tail -n 1)
+    latest_checkpoint=$(find . -type d -wholename "./sample0/fluid_iter*" | sort | tail -n 1)
 
     if [[ -n "$latest_checkpoint" ]]; then
-        iterations=$(echo "$latest_checkpoint" | grep -oP 'fluid_iter\K[0-9]+')
+        iterations=$(echo "$latest_checkpoint" | grep -o 'fluid_iter[0-9]*' | grep -o '[0-9]*')
         echo "$iterations"
     else
         echo "No checkpoints found." >> $LOGFILE

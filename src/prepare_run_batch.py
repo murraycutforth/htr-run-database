@@ -28,8 +28,9 @@ def get_path_to_common_case(xi: list) -> Path:
     common_x_locs = [6.0, 7.0, 8.0, 9.0, 10.0]
     common_z_locs = [6.0, 13.0, 19.0]
 
-    xi_x = xi[0] / LREF
-    xi_z = xi[2] / LREF
+    # Convert
+    xi_x = xi[0]  # Radial
+    xi_z = xi[2]  # Streamwise
 
     # Find closest common x and z locations
     x_idx = min(range(len(common_x_locs)), key=lambda i: abs(common_x_locs[i] - xi_x))
@@ -47,9 +48,15 @@ def update_json_data(config: dict, xi: list) -> None:
     common_case_dir = get_path_to_common_case(xi)
 
     # Update laser focal location
-    config['Flow']['laser']['focalLocation'][0] = xi[0] / LREF
-    config['Flow']['laser']['focalLocation'][1] = xi[2] / LREF  # Note switched y/z indices
-    config['Flow']['laser']['focalLocation'][2] = xi[1] / LREF
+    # xi is given in mm, so multiply by 0.001 and divide by LREF to get dimensionless units
+    # In simulation, coords are (streamwise, radial, azimuthal)
+    # When sampling xi, coords are (radial, azimuthal, streamwise)
+    assert -1.0 <= xi[0] <= 13.0, f"xi[0] out of bounds: {xi[0]}"
+    assert -1.0 <= xi[1] <= 1.0, f"xi[1] out of bounds: {xi[1]}"
+    assert 5.0 <= xi[2] <= 21.0, f"xi[2] out of bounds: {xi[2]}"
+    config['Flow']['laser']['focalLocation'][0] = xi[2] * 0.001 / LREF
+    config['Flow']['laser']['focalLocation'][1] = xi[0] * 0.001 / LREF
+    config['Flow']['laser']['focalLocation'][2] = xi[1] * 0.001 / LREF
 
     # Update axial length and radii
     axial_l_i = xi[3]
@@ -185,16 +192,21 @@ def main():
             f.write('outidr="."')
             f.write('USE_CUDA=0 DEBUG=0 PROFILE=0 QUEUE="pbatch" $HTR_DIR/prometeo.sh -i GG-combustor.json -o "."')
 
-        # Add in copies of the run-htr-with-restarts.sh and prepare_restart_run.py scripts
-        shutil.copy('run-htr-with-restarts.sh', run_dir)
-        shutil.copy('prepare_restart_run.py', run_dir)
+        # Add in copies of common scripts we will use
+        shutil.copy('scripts/run-htr-with-restarts.sh', run_dir)
+        shutil.copy('src/prepare_restart_run.py', run_dir)
+        shutil.copy('scripts/organize-htr.sh', run_dir)
 
         # Make executable
+
         st = os.stat(run_dir / 'run-htr.sh')
         os.chmod(run_dir / 'run-htr.sh', st.st_mode | stat.S_IEXEC)
 
         st = os.stat(run_dir / 'run-htr-with-restarts.sh')
         os.chmod(run_dir / 'run-htr-with-restarts.sh', st.st_mode | stat.S_IEXEC)
+
+        st = os.stat(run_dir / 'organize-htr.sh')
+        os.chmod(run_dir / 'organize-htr.sh', st.st_mode | stat.S_IEXEC)
 
 
 if __name__ == "__main__":
