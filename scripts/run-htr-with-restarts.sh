@@ -95,6 +95,20 @@ for i in $(seq 1 $NUM_RESTARTS); do
 done
 
 check_job_status $job_id
+
+# Re-organise files from the last run so everything is in solution
+
+latest_checkpoint=$(find_latest_checkpoint)
+
+if [[ $? -eq 1 ]]; then
+    echo "No checkpoint found. Exiting script." >> $LOGFILE
+    exit 1
+fi
+
+echo "Latest checkpoint found at iteration $latest_checkpoint" >> $LOGFILE
+
+python3 prepare_restart_run.py $latest_checkpoint
+
 echo "Maximum number of restarts reached. Exiting script." >> $LOGFILE
 
 
