@@ -7,6 +7,8 @@ import argparse
 import json
 from pathlib import Path
 import csv
+import os
+import stat
 
 # Path to reference config file
 REF_CONFIG = 'GG-combustor-default.json'
@@ -74,7 +76,7 @@ def update_json_data(config: dict, xi: list) -> None:
     config['Integrator']['TimeStep']['time5'] = 0.002
 
     # Update methane content
-    config['Flow']['initCase']['restartDir'] = common_case_dir / 'solution' / f'{xi[15]}'
+    config['Flow']['initCase']['restartDir'] = str(common_case_dir / 'solution' / f'{xi[15]}')
 
     # Update thickened flame parameters
     config['Flow']['TFModel']['Efficiency']['beta'] = xi[8]
@@ -89,10 +91,10 @@ def update_json_data(config: dict, xi: list) -> None:
     config['BC']['xBCLeft']['mDot2'] = xi[13]
 
     # Update file directories
-    config['BC']['xBCLeft']['MixtureProfile']['FileDir'] = common_case_dir / 'bc-6sp'
-    config['BC']['xBCLeft']['TemperatureProfile']['FileDir'] = common_case_dir / 'bc-6sp'
-    config['BC']['xBCLeft']['VelocityProfile']['FileDir'] = common_case_dir / 'bc-6sp'
-    config['Grid']['GridInput']['gridDir'] = common_case_dir / 'bc-6sp' / 'grid'
+    config['BC']['xBCLeft']['MixtureProfile']['FileDir'] = str(common_case_dir / 'bc-6sp')
+    config['BC']['xBCLeft']['TemperatureProfile']['FileDir'] = str(common_case_dir / 'bc-6sp')
+    config['BC']['xBCLeft']['VelocityProfile']['FileDir'] = str(common_case_dir / 'bc-6sp')
+    config['Grid']['GridInput']['gridDir'] = str(common_case_dir / 'bc-6sp' / 'grid')
 
 
 def parse_args():
@@ -165,7 +167,7 @@ def main():
     for row in run_database:
         run_id = int(row[0])
         xi = load_xi_from_database_row(row)
-        assert len(xi) == 16, f"Expected 16 parameters, got {len(xi)}"
+        assert len(xi) == 17, f"Expected 17 parameters, got {len(xi)}"
 
         run_dir = outdir_base / f'{run_id:04d}'
         run_dir.mkdir()
@@ -181,6 +183,10 @@ def main():
         with open(run_dir / 'run-htr.sh', 'w') as f:
             f.write('outidr="."')
             f.write('USE_CUDA=0 DEBUG=0 PROFILE=0 QUEUE="pbatch" $HTR_DIR/prometeo.sh -i GG-combustor.json -o "."')
+
+        # Make executable
+        st = os.stat(run_dir / 'run-htr.sh')
+        os.chmod(run_dir / 'run-htr.sh', st.st_mode | stat.S_IEXEC)
 
 
 if __name__ == "__main__":
