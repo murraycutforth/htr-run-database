@@ -15,16 +15,16 @@ import stat
 REF_CONFIG = 'GG-combustor-default.json'
 
 # Path to CommonCase BC and grid files (currently hardcoded for me on dane.llnl.gov)
-COMMON_CASE_DIR = '/p/lustre1/cutforth1/PSAAP/'
+# COMMON_CASE_DIR = '/p/lustre1/cutforth1/PSAAP/'
 
 # Path to dir where runs are executed and output written (again, hardcoded for me on dane.llnl.gov)
-RUN_DIR = '/p/lustre1/cutforth1/PSAAP/'
+# RUN_DIR = '/p/lustre1/cutforth1/PSAAP/'
 
 # Reference length scale [m]
 LREF = 0.003175
 
 
-def get_path_to_common_case(xi: list) -> Path:
+def get_path_to_common_case(xi: list, base_dir: Path) -> Path:
     common_x_locs = [6.0, 7.0, 8.0, 9.0, 10.0]
     common_z_locs = [6.0, 13.0, 19.0]
 
@@ -38,14 +38,14 @@ def get_path_to_common_case(xi: list) -> Path:
 
     x_str = f'{int(common_x_locs[x_idx]):02d}'
     z_str = f'{int(common_z_locs[z_idx]):02d}'
-    path = Path(COMMON_CASE_DIR) / f'location_{x_str}_0_{z_str}' / 'CommonCase' / xi[16]
+    path = base_dir / f'location_{x_str}_0_{z_str}' / 'CommonCase' / xi[16]
     assert path.exists(), f"Common case directory {path} does not exist"
     return path
 
 
-def update_json_data(config: dict, xi: list) -> None:
+def update_json_data(config: dict, xi: list, base_dir: Path) -> None:
     """Edit the given JSON data with the sampled parameters."""
-    common_case_dir = get_path_to_common_case(xi)
+    common_case_dir = get_path_to_common_case(xi, base_dir)
 
     # Update laser focal location
     # xi is given in mm, so multiply by 0.001 and divide by LREF to get dimensionless units
@@ -105,11 +105,6 @@ def update_json_data(config: dict, xi: list) -> None:
     config['Grid']['GridInput']['gridDir'] = str(common_case_dir / 'bc-6sp' / 'grid')
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Set up a batch of runs')
-    parser.add_argument('database', type=str, help='Path to the database file')
-    return parser.parse_args()
-
 
 def read_csv_to_list_of_lists(file_path, num_header_rows=1):
     # Utility function
@@ -149,12 +144,21 @@ def get_batch_ids(rows: list) -> list:
     return [int(row[1]) for row in rows]
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='Set up a batch of runs')
+    parser.add_argument('database', type=str, help='Path to the database file')
+    parser.add_argument('base_dir', type=str, help='Base directory for the runs, e.g. /p/lustre1/cutforth1/PSAAP/ ')
+    return parser.parse_args()
+
+
 def main():
     args = parse_args()
 
+    base_dir = Path(args.base_dir)
     database_path = Path(args.database)
     config_path = Path(REF_CONFIG)
 
+    assert base_dir.exists(), f"Base directory {base_dir} does not exist"
     assert database_path.exists(), f"Database file {database_path} does not exist"
     assert config_path.exists(), f"Reference config file {config_path} does not exist"
 
@@ -164,7 +168,7 @@ def main():
     assert len(set(batch_ids)) == 1, f"Multiple batch IDs found: {set(batch_ids)}"
     batch_id = batch_ids[0]
 
-    outdir_base = Path(RUN_DIR) / f'runs_batch_{batch_id:04d}'
+    outdir_base = base_dir / f'runs_batch_{batch_id:04d}'
     assert not outdir_base.exists(), f"Output directory {outdir_base} already exists"
     outdir_base.mkdir()
 
@@ -181,7 +185,7 @@ def main():
         run_dir.mkdir()
 
         config = ref_config.copy()
-        update_json_data(config, xi)
+        update_json_data(config, xi, base_dir)
 
         # Write the config to a new file
         with open(run_dir / 'GG-combustor.json', 'w') as f:
