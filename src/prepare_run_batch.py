@@ -194,7 +194,7 @@ def main():
         run_dir.mkdir()
 
         config = ref_config.copy()
-        update_json_data(config, xi, base_dir)
+        update_json_data(config, xi, base_dir, wall_time)
 
         # Write the config to a new file
         with open(run_dir / 'GG-combustor.json', 'w') as f:
