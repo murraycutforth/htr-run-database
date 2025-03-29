@@ -148,6 +148,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Set up a batch of runs')
     parser.add_argument('database', type=str, help='Path to the database file')
     parser.add_argument('base_dir', type=str, help='Base directory for the runs, e.g. /p/lustre1/cutforth1/PSAAP/ ')
+    parser.add_argument('use_cuda', type=int, help='Use CUDA or not')
     return parser.parse_args()
 
 
@@ -157,10 +158,12 @@ def main():
     base_dir = Path(args.base_dir)
     database_path = Path(args.database)
     config_path = Path(REF_CONFIG)
+    use_cuda = int(args.use_cuda)
 
     assert base_dir.exists(), f"Base directory {base_dir} does not exist"
     assert database_path.exists(), f"Database file {database_path} does not exist"
     assert config_path.exists(), f"Reference config file {config_path} does not exist"
+    assert use_cuda in [0, 1], f"Invalid use_cuda value: {use_cuda}"
 
     run_database = read_csv_to_list_of_lists(database_path)
     batch_ids = get_batch_ids(run_database)
@@ -194,12 +197,13 @@ def main():
         # Write the run-htr.sh script
         with open(run_dir / 'run-htr.sh', 'w') as f:
             f.write('outidr="."')
-            f.write('USE_CUDA=0 DEBUG=0 PROFILE=0 QUEUE="pbatch" $HTR_DIR/prometeo.sh -i GG-combustor.json -o "."')
+            f.write(f'USE_CUDA={use_cuda} DEBUG=0 PROFILE=0 QUEUE="pbatch" $HTR_DIR/prometeo.sh -i GG-combustor.json -o "."')
 
         # Add in copies of common scripts we will use
         shutil.copy('scripts/run-htr-with-restarts.sh', run_dir)
         shutil.copy('src/prepare_restart_run.py', run_dir)
         shutil.copy('scripts/organize-htr.sh', run_dir)
+        shutil.copy('scripts/set_off_runs.sh', run_dir)
 
         # Make executable
 
@@ -211,6 +215,9 @@ def main():
 
         st = os.stat(run_dir / 'organize-htr.sh')
         os.chmod(run_dir / 'organize-htr.sh', st.st_mode | stat.S_IEXEC)
+
+        st = os.stat(run_dir / 'set_off_runs.sh')
+        os.chmod(run_dir / 'set_off_runs.sh', st.st_mode | stat.S_IEXEC)
 
 
 if __name__ == "__main__":
