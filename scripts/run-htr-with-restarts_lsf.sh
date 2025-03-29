@@ -13,7 +13,7 @@
 # 3. Once all restarts have been completed, end script
 # Logging of all steps from this script goes to run-htr-with-restarts.log
 
-NUM_RESTARTS=1
+NUM_RESTARTS=3
 RUN_COMMAND="./run-htr.sh"
 LOGFILE="run-htr-with-restarts.log"
 touch $LOGFILE
