@@ -94,7 +94,7 @@ for i in $(seq 1 $NUM_RESTARTS); do
     fi
 
     job_sub_msg=$($RUN_COMMAND)
-    job_id=$(echo "$job_sub_msg" | awk '{print $NF}')
+    job_id=$(echo "$job_sub_msg" | grep -oP '(?<=Job <)\d+(?=>)')
 
     echo "Job resubmitted with ID $job_id" >> $LOGFILE
 
