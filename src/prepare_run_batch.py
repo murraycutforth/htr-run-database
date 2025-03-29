@@ -203,7 +203,6 @@ def main():
         shutil.copy('scripts/run-htr-with-restarts.sh', run_dir)
         shutil.copy('src/prepare_restart_run.py', run_dir)
         shutil.copy('scripts/organize-htr.sh', run_dir)
-        shutil.copy('scripts/set_off_runs.sh', run_dir)
 
         # Make executable
 
@@ -216,9 +215,10 @@ def main():
         st = os.stat(run_dir / 'organize-htr.sh')
         os.chmod(run_dir / 'organize-htr.sh', st.st_mode | stat.S_IEXEC)
 
-        st = os.stat(run_dir / 'set_off_runs.sh')
-        os.chmod(run_dir / 'set_off_runs.sh', st.st_mode | stat.S_IEXEC)
-
+    shutil.copy('scripts/set_off_runs.sh', base_dir)
+    
+    st = os.stat(base_dir / 'set_off_runs.sh')
+    os.chmod(base_dir / 'set_off_runs.sh', st.st_mode | stat.S_IEXEC)
 
 if __name__ == "__main__":
     main()
