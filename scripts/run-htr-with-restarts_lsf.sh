@@ -33,6 +33,15 @@ check_job_status() {
         else
             # Job is still queueing or running
             job_status=$(echo "$job_info" | awk '{print $3}')
+
+            if [[ "$job_status" == "DONE" ]]; then
+                echo "Job $job_id has completed normally. Checking for latest checkpoint..." >> $LOGFILE
+                break
+            elif [[ "$job_status" == "EXIT" ]]; then
+                echo "Job $job_id has abnormal completion. Checking for latest checkpoint..." >> $LOGFILE
+                break
+            fi
+
             echo "Job $job_id has status ${job_status}... Checking again in 60 seconds." >> $LOGFILE
             sleep 60
         fi
