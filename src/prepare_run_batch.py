@@ -206,7 +206,8 @@ def main():
             f.write(f'USE_CUDA={use_cuda} DEBUG=0 PROFILE=0 QUEUE="pbatch" $HTR_DIR/prometeo.sh -i GG-combustor.json -o "."')
 
         # Add in copies of common scripts we will use
-        shutil.copy('scripts/run-htr-with-restarts.sh', run_dir)
+        shutil.copy('scripts/run-htr-with-restarts_slurm.sh', run_dir)
+        shutil.copy('scripts/run-htr-with-restarts_lsf.sh', run_dir)
         shutil.copy('src/prepare_restart_run.py', run_dir)
         shutil.copy('scripts/organize-htr.sh', run_dir)
 
@@ -215,8 +216,11 @@ def main():
         st = os.stat(run_dir / 'run-htr.sh')
         os.chmod(run_dir / 'run-htr.sh', st.st_mode | stat.S_IEXEC)
 
-        st = os.stat(run_dir / 'run-htr-with-restarts.sh')
-        os.chmod(run_dir / 'run-htr-with-restarts.sh', st.st_mode | stat.S_IEXEC)
+        st = os.stat(run_dir / 'run-htr-with-restarts_slurm.sh')
+        os.chmod(run_dir / 'run-htr-with-restarts_slurm.sh', st.st_mode | stat.S_IEXEC)
+
+        st = os.stat(run_dir / 'run-htr-with-restarts_lsf.sh')
+        os.chmod(run_dir / 'run-htr-with-restarts_lsf.sh', st.st_mode | stat.S_IEXEC)
 
         st = os.stat(run_dir / 'organize-htr.sh')
         os.chmod(run_dir / 'organize-htr.sh', st.st_mode | stat.S_IEXEC)

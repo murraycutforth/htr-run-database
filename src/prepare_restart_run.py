@@ -20,7 +20,8 @@ def update_json_data(config: dict, num_iterations: int) -> None:
 
 
 def return_slurm_file():
-    slurm_file = glob('slurm*')
+    # Find slurm or LSF .out files
+    slurm_file = glob('*.out')
 
     if not slurm_file:
         raise FileNotFoundError("No slurm file found")
