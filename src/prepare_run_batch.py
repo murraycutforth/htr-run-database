@@ -43,7 +43,7 @@ def get_path_to_common_case(xi: list, base_dir: Path) -> Path:
     return path
 
 
-def update_json_data(config: dict, xi: list, base_dir: Path) -> None:
+def update_json_data(config: dict, xi: list, base_dir: Path, wall_time: int) -> None:
     """Edit the given JSON data with the sampled parameters."""
     common_case_dir = get_path_to_common_case(xi, base_dir)
 
@@ -104,6 +104,9 @@ def update_json_data(config: dict, xi: list, base_dir: Path) -> None:
     config['BC']['xBCLeft']['VelocityProfile']['FileDir'] = str(common_case_dir / 'bc-6sp')
     config['Grid']['GridInput']['gridDir'] = str(common_case_dir / 'bc-6sp' / 'grid')
 
+    # Update wall time
+    config['Mapping']['wallTime'] = wall_time
+
 
 
 def read_csv_to_list_of_lists(file_path, num_header_rows=1):
@@ -148,7 +151,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Set up a batch of runs')
     parser.add_argument('database', type=str, help='Path to the database file')
     parser.add_argument('base_dir', type=str, help='Base directory for the runs, e.g. /p/lustre1/cutforth1/PSAAP/ ')
-    parser.add_argument('use_cuda', type=int, help='Use CUDA or not')
+    parser.add_argument('use_cuda', type=int, default=0, help='Use CUDA or not')
+    parser.add_argument('wall_time', type=int, default=1430, help='Wall time for each run')
     return parser.parse_args()
 
 
@@ -159,11 +163,13 @@ def main():
     database_path = Path(args.database)
     config_path = Path(REF_CONFIG)
     use_cuda = int(args.use_cuda)
+    wall_time = int(args.wall_time)
 
     assert base_dir.exists(), f"Base directory {base_dir} does not exist"
     assert database_path.exists(), f"Database file {database_path} does not exist"
     assert config_path.exists(), f"Reference config file {config_path} does not exist"
     assert use_cuda in [0, 1], f"Invalid use_cuda value: {use_cuda}"
+    assert wall_time > 0, f"Invalid wall time: {wall_time}"
 
     run_database = read_csv_to_list_of_lists(database_path)
     batch_ids = get_batch_ids(run_database)
@@ -215,10 +221,9 @@ def main():
         st = os.stat(run_dir / 'organize-htr.sh')
         os.chmod(run_dir / 'organize-htr.sh', st.st_mode | stat.S_IEXEC)
 
-    shutil.copy('scripts/set_off_runs.sh', base_dir)
-    
-    st = os.stat(base_dir / 'set_off_runs.sh')
-    os.chmod(base_dir / 'set_off_runs.sh', st.st_mode | stat.S_IEXEC)
+    shutil.copy('scripts/set_off_runs.sh', outdir_base)
+    st = os.stat(outdir_base / 'set_off_runs.sh')
+    os.chmod(outdir_base / 'set_off_runs.sh', st.st_mode | stat.S_IEXEC)
 
 if __name__ == "__main__":
     main()
