@@ -8,6 +8,6 @@ do
     padded_i=$(printf "%04d" $i)
     echo "Starting run $padded_i"
     cd $padded_i || exit
-    ./run-htr-with-restarts.sh &
+    ./run-htr-with-restarts_lsf.sh &
     cd ..
 done

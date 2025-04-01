@@ -151,8 +151,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Set up a batch of runs')
     parser.add_argument('database', type=str, help='Path to the database file')
     parser.add_argument('base_dir', type=str, help='Base directory for the runs, e.g. /p/lustre1/cutforth1/PSAAP/ ')
-    parser.add_argument('use_cuda', type=int, default=0, help='Use CUDA or not')
-    parser.add_argument('wall_time', type=int, default=1430, help='Wall time for each run')
+    parser.add_argument('use_cuda', type=int, default=1, help='Use CUDA or not')
+    parser.add_argument('wall_time', type=int, default=580, help='Wall time for each run')
     return parser.parse_args()
 
 

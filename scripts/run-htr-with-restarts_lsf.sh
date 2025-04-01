@@ -15,6 +15,7 @@
 
 NUM_RESTARTS=3
 RUN_COMMAND="./run-htr.sh"
+MAX_ITER=40000
 LOGFILE="run-htr-with-restarts.log"
 touch $LOGFILE
 
@@ -85,6 +86,11 @@ for i in $(seq 1 $NUM_RESTARTS); do
     fi
 
     echo "Latest checkpoint found at iteration $latest_checkpoint" >> $LOGFILE
+
+    if [[ $latest_checkpoint -ge $MAX_ITERATIONS ]]; then
+        echo "Maximum number of iterations $MAX_ITERATIONS reached. Exiting restart loop." >> $LOGFILE
+        break
+    fi
 
     python3 prepare_restart_run.py $latest_checkpoint
 
