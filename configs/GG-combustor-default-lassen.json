@@ -372,7 +372,7 @@
         "AveragesSamplingInterval": 10,
         "volumeProbes": [],
         "XYAverages": [],
-        "restartEveryTimeSteps": 5000,
+        "restartEveryTimeSteps": 2000,
         "YAverages": [],
         "XZAverages": [],
         "ZAverages": []
