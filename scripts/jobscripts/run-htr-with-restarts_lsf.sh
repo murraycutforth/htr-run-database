@@ -14,7 +14,7 @@
 
 NUM_RESTARTS=1
 RUN_COMMAND="./run-htr.sh"
-MAX_ITER=38000
+MAX_ITER=36000  # Don't restart if we have done \ge MAX_ITER iterations
 LOGFILE="run-htr-with-restarts.log"
 touch $LOGFILE
 

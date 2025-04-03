@@ -143,6 +143,37 @@ def load_xi_from_database_row(row: list) -> list:
     ]
 
 
+def load_nominal_xz_coords_from_database_row(row: list) -> list:
+    return [
+        float(row[2]),  # radial [mm]
+        float(row[4])  # streamwise [mm]
+    ]
+
+
+def set_restart_frequency(config: dict, xz_coords: list) -> None:
+    """We are more interested in the indirect ignition cases, so adjust output accordingly.
+
+    At 2.2GB per snapshot, this yields either 88GB or 22GB per run.
+    """
+    radial_dist_mm = xz_coords[0]
+
+    if radial_dist_mm > 7.5:
+        restart_every = 1000
+    else:
+        restart_every = 4000
+
+    config["IO"]["restartEveryTimeSteps"] = restart_every
+
+
+def print_out_config_info(config: dict) -> None:
+    print("New config info for this run:")
+    print(f' Laser focal location: {config["Flow"]["laser"]["focalLocation"]}')
+    print(f' Output frequency: {config["IO"]["restartEveryTimeSteps"]}')
+    print(f' Laser pulse time: {config["Flow"]["laser"]["pulseTime"]}')
+    print(f' time1: {config["Integrator"]["TimeStep"]["time1"]}, zone2: {config["Integrator"]["TimeStep"]["zone2"]}')
+    print(f' beta (near radius / far radius): {config["Flow"]["Laser"]["nearRadius"] / config["Flow"]["Laser"]["farRadius"]}')
+
+
 def get_batch_ids(rows: list) -> list:
     return [int(row[1]) for row in rows]
 
@@ -184,17 +215,26 @@ def main():
     for row in run_database:
         run_id = int(row[0])
         xi = load_xi_from_database_row(row)
+        nominal_xz_coords = load_nominal_xz_coords_from_database_row(row)
         assert len(xi) == 17, f"Expected 17 parameters, got {len(xi)}"
+
+        print(f'Preparing run {run_id} with nominal xz coords {nominal_xz_coords} and xi {xi}')
 
         run_dir = outdir_base / f'{run_id:04d}'
         run_dir.mkdir()
 
         config = ref_config.copy()
         update_json_data(config, xi, base_dir, wall_time)
+        set_restart_frequency(config, nominal_xz_coords)
 
         # Write the config to a new file
         with open(run_dir / 'GG-combustor.json', 'w') as f:
             json.dump(config, f, indent=4)
+
+        # Print out new config as sanity check
+        with open(run_dir / 'GG-combustor.json', 'r') as f:
+            new_config = json.load(f)
+            print_out_config_info(new_config)
 
         # Write the run-htr.sh script
         with open(run_dir / 'run-htr.sh', 'w') as f:
