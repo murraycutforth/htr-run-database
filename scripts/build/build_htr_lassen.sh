@@ -35,13 +35,13 @@ export CURVILINEAR_COORDINATES=1
 export RESERVED_CORES=8
 export NO_ATOMIC=0
 
-git clone https://gitlab.com/StanfordLegion/legion.git legion_lassen
-cd legion_lassen
-git checkout cba415a857c2586b2ad2f4848d6d1cd75de7df00
-cd language
+git clone https://gitlab.com/insieme1/htr/htr-solver.git htr_lassen
+cd htr_lassen
+git checkout 13be1790fcaccb25d34138b8f79799a71cf588a4
+cd src
 
 echo "Printing current modules:"
 module list
 echo "Starting legion compilation..."
 
-scripts/setup_env.py
+make -j prometeo_BFERoxy6SpMix.exec
