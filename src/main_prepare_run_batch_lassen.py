@@ -54,9 +54,9 @@ def update_json_data(config: dict, xi: list, base_dir: Path, wall_time: int) -> 
     assert -1.0 <= xi[0] <= 13.0, f"xi[0] out of bounds: {xi[0]}"
     assert -1.0 <= xi[1] <= 1.0, f"xi[1] out of bounds: {xi[1]}"
     assert 5.0 <= xi[2] <= 21.0, f"xi[2] out of bounds: {xi[2]}"
-    config['Flow']['laser']['focalLocation'][0] = xi[2] * 0.001 / LREF
-    config['Flow']['laser']['focalLocation'][1] = xi[0] * 0.001 / LREF
-    config['Flow']['laser']['focalLocation'][2] = xi[1] * 0.001 / LREF
+    config['Flow']['laser']['focalLocation'][0] = xi[2] * 0.001 / LREF  # streamwise
+    config['Flow']['laser']['focalLocation'][1] = xi[0] * 0.001 / LREF  # radial
+    config['Flow']['laser']['focalLocation'][2] = xi[1] * 0.001 / LREF  # azimuthal
 
     # Update axial length and radii
     axial_l_i = xi[3]
@@ -167,11 +167,13 @@ def set_restart_frequency(config: dict, xz_coords: list) -> None:
 
 def print_out_config_info(config: dict) -> None:
     print("New config info for this run:")
-    print(f' Laser focal location: {config["Flow"]["laser"]["focalLocation"]}')
+    print(f' Laser focal location: {config["Flow"]["laser"]["focalLocation"]} which has radial location in mm of {config["Flow"]["laser"]["focalLocation"][1] * 1000 * LREF} [mm] ')
     print(f' Output frequency: {config["IO"]["restartEveryTimeSteps"]}')
     print(f' Laser pulse time: {config["Flow"]["laser"]["pulseTime"]}')
-    print(f' time1: {config["Integrator"]["TimeStep"]["time1"]}, zone2: {config["Integrator"]["TimeStep"]["zone2"]}')
-    print(f' beta (near radius / far radius): {config["Flow"]["Laser"]["nearRadius"] / config["Flow"]["Laser"]["farRadius"]}')
+    time1 = config["Integrator"]["TimeStep"]["time1"]
+    zone1 = config["Integrator"]["TimeStep"]["zone1"]
+    print(f' time1: {time1}, zone1: {zone1}, zone1 ends at time {time1*zone1} (should be just before pulse time)')
+    print(f' beta (near radius / far radius): {config["Flow"]["laser"]["nearRadius"] / config["Flow"]["laser"]["farRadius"]}')
 
 
 def get_batch_ids(rows: list) -> list:
