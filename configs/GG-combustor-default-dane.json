@@ -68,16 +68,16 @@
             "mDot1": 1.7659670691702407,
             "P": 1.3243918085368862,
             "MixtureProfile": {
-                "FileDir": "../CommonCase/S_0p80/bc-6sp",
+                "FileDir": "",
                 "type": "File"
             },
             "TemperatureProfile": {
-                "FileDir": "../CommonCase/S_0p80/bc-6sp",
+                "FileDir": "",
                 "type": "File"
             },
             "tRamp": 0.0,
             "VelocityProfile": {
-                "FileDir": "../CommonCase/S_0p80/bc-6sp",
+                "FileDir": "",
                 "type": "File"
             },
             "type": "PSAAP_RampedInflow"
@@ -86,22 +86,17 @@
     "Integrator": {
         "resetTime": false,
         "TimeStep": {
-            "time4": 0.001,
-            "time5": 0.002,
             "time1": 0.003,
             "time2": 2e-05,
             "time3": 0.0002,
-            "zone3": 11000,
-            "zone2": 9000,
-            "zone1": 7000,
-            "zone5": 5000,
-            "zone4": 13000,
+            "time4": 0.001,
+            "time5": 0.002,
             "type": "MultiStageConstantDeltaTime"
         },
         "startIter": 0,
         "implicitChemistry": false,
         "startTime": 0.0,
-        "maxIter": 40000,
+        "maxIter": 38000,
         "EulerScheme": {
             "vorticityScale": 0.5,
             "type": "Hybrid",
@@ -135,7 +130,7 @@
             "TRef": 300.0
         },
         "laser": {
-            "pulseTime": 21.0043955,
+            "pulseTime": 0.0,
             "dimensions": 3,
             "farRadius": 0.11944161933775765,
             "nearRadius": 0.13410033942556462,
@@ -184,7 +179,7 @@
         },
         "initCase": {
             "type": "Restart",
-            "restartDir": "./../CommonCase/S_0p80/solution/fluid_iter0000040000"
+            "restartDir": ""
         },
         "resetMixture": false,
         "TFModel": {
@@ -288,7 +283,7 @@
     "Grid": {
         "xNum": 432,
         "GridInput": {
-            "gridDir": "../CommonCase/S_0p80/bc-6sp/grid",
+            "gridDir": "",
             "type": "FromFile"
         },
         "zNum": 190,

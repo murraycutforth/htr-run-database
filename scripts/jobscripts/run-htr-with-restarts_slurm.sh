@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # This script is used to run the HTR code with restarts
 # It assumes that run-htr.sh, prepare_restart_run.py, GG-combustor.json all exists in the same directory
 # High level operation:
@@ -12,6 +11,7 @@
  # e. Submit job again via run-htr.sh and record job id
 # 3. Once all restarts have been completed, end script
 # Logging of all steps from this script goes to run-htr-with-restarts.log
+# ============================================================
 
 NUM_RESTARTS=1
 RUN_COMMAND="./run-htr.sh"

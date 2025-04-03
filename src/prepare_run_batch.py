@@ -71,17 +71,17 @@ def update_json_data(config: dict, xi: list, base_dir: Path, wall_time: int) -> 
     # Update FWHM
     config['Flow']['laser']['pulseFWHM'] = xi[7]
 
-    # Update times
-    a = 1000 + xi[14]
-    b = a + 2000
-    c = b + 2000
-    d = c + 2000
-    config['Integrator']['TimeStep']['zone1'] = a
-    config['Integrator']['TimeStep']['zone2'] = b
-    config['Integrator']['TimeStep']['zone3'] = c
-    config['Integrator']['TimeStep']['zone4'] = d
-    config['Flow']['laser']['pulseTime'] += xi[14] * 0.003
+    # Update time steps, so the zones are aligned with the laser firing time
+    config['Integrator']['TimeStep']['zone1'] = 1000 + xi[14]
+    config['Integrator']['TimeStep']['zone2'] = 3000 + xi[14]
+    config['Integrator']['TimeStep']['zone3'] = 5000 + xi[14]
+    config['Integrator']['TimeStep']['zone4'] = 7000 + xi[14]
     config['Integrator']['TimeStep']['time5'] = 0.002
+
+    # Laser firing time - set to slightly after the zone2 time steps begin
+    pulseOffset = config['Flow']['laser']['pulseFWHM'] * 5
+    assert config['Integrator']['TimeStep']['time1'] == 0.003
+    config['Flow']['laser']['pulseTime'] = pulseOffset + (1000 + xi[14]) * 0.003
 
     # Update methane content
     config['Flow']['initCase']['restartDir'] = str(common_case_dir / 'solution' / f'{xi[15]}')
