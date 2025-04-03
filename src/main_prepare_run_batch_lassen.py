@@ -1,6 +1,6 @@
 """
 We take reference GG-combustor.json file and modify it for each run in the batch, put them into a new directory
-for each one, and record the mapping from run_id to directory in a csv file.
+for each one, and record the mapping from run_id to directory in a csv file. Expected to be run on lassen.
 """
 
 import argparse
@@ -12,7 +12,7 @@ import os
 import stat
 
 # Path to reference config file
-REF_CONFIG = 'GG-combustor-default.json'
+REF_CONFIG = 'configs/GG-combustor-default-lassen.json'
 
 # Path to CommonCase BC and grid files (currently hardcoded for me on dane.llnl.gov)
 # COMMON_CASE_DIR = '/p/lustre1/cutforth1/PSAAP/'
@@ -149,10 +149,8 @@ def get_batch_ids(rows: list) -> list:
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Set up a batch of runs')
-    parser.add_argument('database', type=str, help='Path to the database file')
-    parser.add_argument('base_dir', type=str, help='Base directory for the runs, e.g. /p/lustre1/cutforth1/PSAAP/ ')
-    parser.add_argument('use_cuda', type=int, default=1, help='Use CUDA or not')
-    parser.add_argument('wall_time', type=int, default=580, help='Wall time for each run')
+    parser.add_argument('database', type=str, help='Path to the database file, e.g. output/run_database_batch_1.csv')
+    parser.add_argument('base_dir', type=str, help='Base directory for the runs, e.g. /p/lustre1/cutforth1/PSAAP/ or /p/gpfs1/cutforth1/PSAAP/')
     return parser.parse_args()
 
 
@@ -162,14 +160,12 @@ def main():
     base_dir = Path(args.base_dir)
     database_path = Path(args.database)
     config_path = Path(REF_CONFIG)
-    use_cuda = int(args.use_cuda)
-    wall_time = int(args.wall_time)
+    use_cuda = 1
+    wall_time = 720
 
     assert base_dir.exists(), f"Base directory {base_dir} does not exist"
     assert database_path.exists(), f"Database file {database_path} does not exist"
     assert config_path.exists(), f"Reference config file {config_path} does not exist"
-    assert use_cuda in [0, 1], f"Invalid use_cuda value: {use_cuda}"
-    assert wall_time > 0, f"Invalid wall time: {wall_time}"
 
     run_database = read_csv_to_list_of_lists(database_path)
     batch_ids = get_batch_ids(run_database)
@@ -206,18 +202,14 @@ def main():
             f.write(f'USE_CUDA={use_cuda} DEBUG=0 PROFILE=0 QUEUE="pbatch" $HTR_DIR/prometeo.sh -i GG-combustor.json -o "."')
 
         # Add in copies of common scripts we will use
-        shutil.copy('scripts/run-htr-with-restarts_slurm.sh', run_dir)
-        shutil.copy('scripts/run-htr-with-restarts_lsf.sh', run_dir)
+        shutil.copy('scripts/jobscripts/run-htr-with-restarts_lsf.sh', run_dir)
         shutil.copy('src/prepare_restart_run.py', run_dir)
-        shutil.copy('scripts/organize-htr.sh', run_dir)
+        shutil.copy('scripts/utils/organize-htr.sh', run_dir)
 
         # Make executable
 
         st = os.stat(run_dir / 'run-htr.sh')
         os.chmod(run_dir / 'run-htr.sh', st.st_mode | stat.S_IEXEC)
-
-        st = os.stat(run_dir / 'run-htr-with-restarts_slurm.sh')
-        os.chmod(run_dir / 'run-htr-with-restarts_slurm.sh', st.st_mode | stat.S_IEXEC)
 
         st = os.stat(run_dir / 'run-htr-with-restarts_lsf.sh')
         os.chmod(run_dir / 'run-htr-with-restarts_lsf.sh', st.st_mode | stat.S_IEXEC)
@@ -225,9 +217,10 @@ def main():
         st = os.stat(run_dir / 'organize-htr.sh')
         os.chmod(run_dir / 'organize-htr.sh', st.st_mode | stat.S_IEXEC)
 
-    shutil.copy('scripts/set_off_runs.sh', outdir_base)
-    st = os.stat(outdir_base / 'set_off_runs.sh')
-    os.chmod(outdir_base / 'set_off_runs.sh', st.st_mode | stat.S_IEXEC)
+    shutil.copy('scripts/jobscripts/start_many_runs_lsf.sh', outdir_base)
+    st = os.stat(outdir_base / 'start_many_runs_lsf.sh')
+    os.chmod(outdir_base / 'start_many_runs_lsf.sh', st.st_mode | stat.S_IEXEC)
+
 
 if __name__ == "__main__":
     main()

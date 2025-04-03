@@ -5,9 +5,8 @@
 # 1. Submit job via run-htr.sh and record job id
 # 2. For each restart:
  # a. Continuously monitor job status via bjobs until job has completed
- # b. Check if job has failed due to crash (how?)
- # c. If job has failed, end script
- # d. If job has run until time limit, extract last checkpoint file and call prepare_restart_run.py in order to move output and update GG-combustor.json
+ # b. If job has completed all iters, end script
+ # d. If job has crashed (there is a random bug with the current HTR/Legion version), extract last checkpoint file and call prepare_restart_run.py in order to move output and update GG-combustor.json
  # e. Submit job again via run-htr.sh and record job id
 # 3. Once all restarts have been completed, end script
 # Logging of all steps from this script goes to run-htr-with-restarts.log
@@ -15,6 +14,7 @@
 
 NUM_RESTARTS=1
 RUN_COMMAND="./run-htr.sh"
+MAX_ITER=38000
 LOGFILE="run-htr-with-restarts.log"
 touch $LOGFILE
 
@@ -86,8 +86,8 @@ for i in $(seq 1 $NUM_RESTARTS); do
 
     echo "Latest checkpoint found at iteration $latest_checkpoint" >> $LOGFILE
 
-    if [[ $latest_checkpoint -ge $MAX_ITERATIONS ]]; then
-        echo "Maximum number of iterations $MAX_ITERATIONS reached. Exiting restart loop." >> $LOGFILE
+    if [[ $latest_checkpoint -ge $MAX_ITER ]]; then
+        echo "Maximum number of iterations $MAX_ITER reached. Exiting restart loop." >> $LOGFILE
         break
     fi
 
@@ -107,20 +107,24 @@ done
 
 check_job_status $job_id
 
+echo "Maximum number of restarts reached. Finishing up" >> $LOGFILE
+
 # Re-organise files from the last run so everything is in solution
 
 latest_checkpoint=$(find_latest_checkpoint)
+
+echo "Final checkpoint found at iteration $latest_checkpoint" >> $LOGFILE
 
 if [[ $? -eq 1 ]]; then
     echo "No checkpoint found. Exiting script." >> $LOGFILE
     exit 1
 fi
 
-echo "Latest checkpoint found at iteration $latest_checkpoint" >> $LOGFILE
+echo "Organising final set of checkpoints into solution dir" >> $LOGFILE
 
 python3 prepare_restart_run.py $latest_checkpoint
 
-echo "Maximum number of restarts reached. Exiting script." >> $LOGFILE
+echo "Script completed normally" >> $LOGFILE
 
 
 

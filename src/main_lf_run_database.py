@@ -1,13 +1,14 @@
 """
-Run this script to create the run database. This outputs a csv file, which can be copied to Dane, and used as the input
-to `prepare_run_batch.py`, to set up the required directories and config files for a simulation.
+Run this script to create the run database. This outputs a csv file, which can be copied to Dane/Lassen, and used as the input
+to `prepare_run_batch.py`, to set up the required directories and config files for a simulation. Can be run locally, then
+commit the output database files.
 """
 import seaborn as sns
 from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
 
-from create_run_database import CreateDatabaseBatchV1
+from uq_database import CreateDatabaseBatchV1
 
 
 def create_pairplot(database_path, batch_id):
