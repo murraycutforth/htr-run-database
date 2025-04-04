@@ -77,21 +77,31 @@ job_id=$(echo "$job_sub_msg" | grep -oP '(?<=Job <)\d+(?=>)')
 echo "Job submitted with first ID $job_id" >> $LOGFILE
 
 for i in $(seq 1 $NUM_RESTARTS); do
-    check_job_status $job_id
-
-    # TODO: check for crash and end early here if so
+    check_job_status $job_id  # We remain in this function until job is no longer in RUN or PEND state
 
     latest_checkpoint=$(find_latest_checkpoint)
 
     if [[ $? -eq 1 ]]; then
-        echo "No checkpoint found. Exiting script." >> $LOGFILE
-        exit 1
+        echo "No checkpoint found. Restarting from beginning." >> $LOGFILE
+        rm -r sample0
+        job_sub_msg=$($RUN_COMMAND)
+        job_id=$(echo "$job_sub_msg" | grep -oP '(?<=Job <)\d+(?=>)')
+        echo "Job resubmitted with ID $job_id" >> $LOGFILE
+        continue
     fi
 
     echo "Latest checkpoint found at iteration $latest_checkpoint" >> $LOGFILE
 
     if [[ $latest_checkpoint -ge $MAX_ITER ]]; then
         echo "Maximum number of iterations $MAX_ITER reached. Exiting restart loop." >> $LOGFILE
+        break
+    fi
+
+    # Check if the number is not a multiple of 1000 as this indicates a NaN
+    if (( $latest_checkpoint % 1000 != 0 )); then
+        echo "Latest checkpoint $latest_checkpoint is not a multiple of 1000 (possible NaN). Exiting restart loop." >> $LOGFILE
+        echo "Final line of console.txt:" >> $LOGFILE
+        tail -n 1 ./sample0/console.txt >> $LOGFILE
         break
     fi
 
@@ -104,7 +114,6 @@ for i in $(seq 1 $NUM_RESTARTS); do
 
     job_sub_msg=$($RUN_COMMAND)
     job_id=$(echo "$job_sub_msg" | grep -oP '(?<=Job <)\d+(?=>)')
-
     echo "Job resubmitted with ID $job_id" >> $LOGFILE
 
 done
