@@ -49,6 +49,10 @@ find_latest_checkpoint() {
 
     if [[ -n "$latest_checkpoint" ]]; then
         iterations=$(echo "$latest_checkpoint" | grep -o 'fluid_iter[0-9]*' | grep -o '[0-9]*')
+
+        # Remove leading zeros from the iterations
+        iterations=$(echo "$iterations" | sed 's/^0*//')
+
         echo "$iterations"
     else
         echo "No checkpoints found." >> $LOGFILE
