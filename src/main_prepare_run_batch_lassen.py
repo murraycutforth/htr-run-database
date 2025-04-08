@@ -150,17 +150,22 @@ def load_nominal_xz_coords_from_database_row(row: list) -> list:
     ]
 
 
-def set_restart_frequency(config: dict, xz_coords: list) -> None:
+def set_restart_frequency(config: dict, xz_coords: list, batch_id: int) -> None:
     """We are more interested in the indirect ignition cases, so adjust output accordingly.
 
     At 2.2GB per snapshot, this yields either 88GB or 22GB per run.
     """
-    radial_dist_mm = xz_coords[0]
+    if batch_id == 1:
+        radial_dist_mm = xz_coords[0]
 
-    if radial_dist_mm > 7.5:
-        restart_every = 1000
-    else:
+        if radial_dist_mm > 7.5:
+            restart_every = 1000
+        else:
+            restart_every = 4000
+    elif batch_id == 2:
         restart_every = 4000
+    else:
+        raise ValueError(f"Unknown batch ID {batch_id}")
 
     config["IO"]["restartEveryTimeSteps"] = restart_every
 
@@ -227,7 +232,7 @@ def main():
 
         config = ref_config.copy()
         update_json_data(config, xi, base_dir, wall_time)
-        set_restart_frequency(config, nominal_xz_coords)
+        set_restart_frequency(config, nominal_xz_coords, batch_id)
 
         # Write the config to a new file
         with open(run_dir / 'GG-combustor.json', 'w') as f:
