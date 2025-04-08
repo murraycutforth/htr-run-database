@@ -66,7 +66,7 @@ def plot_data(run_id_to_df):
     # Plot vol burned vs. iteration
     fig, ax = plt.subplots()
     for run_id, data in run_id_to_df.items():
-        ax.scatter(data[:, 1], data[:, 5])
+        ax.plot(data[:, 1], data[:, 5])
     plt.xlabel('time')
     plt.ylabel('Vol Burned')
     plt.show()
@@ -82,7 +82,7 @@ def plot_data(run_id_to_df):
 def plot_focal_coordinates(csv_file):
     df = pd.read_csv(csv_file)
     plt.figure(figsize=(10, 6))
-    plt.scatter(df['focal_x'][:200], df['focal_z'][:200], marker='o', alpha=0.7)
+    plt.scatter(df['focal_x'], df['focal_z'], marker='o', alpha=0.7)
     plt.xlabel('Focal X')
     plt.ylabel('Focal Z')
     plt.title('Focal X vs Focal Z Coordinates')
@@ -102,7 +102,7 @@ def main():
 
     plot_data(run_id_to_df)
 
-    # plot_focal_coordinates('./../output/run_database_batch_1.csv')
+    plot_focal_coordinates('./../output/run_database_batch_1.csv')
 
 
 if __name__ == "__main__":

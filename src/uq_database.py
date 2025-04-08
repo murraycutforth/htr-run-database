@@ -1,3 +1,4 @@
+import copy
 import csv
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -137,10 +138,10 @@ def sample_uq_vector_v1(nominal_x: float, nominal_z: float):
 
 
 def resample_aleatoric_vars(xi: list) -> list:
-    xi = xi.copy()
-    xi[14] = np.random.choice(TIMES_VEC)
+    xi = copy.deepcopy(xi)
+    assert isinstance(xi[16], int)
+    xi[16] = int(np.random.choice(TIMES_VEC))
     return xi
-
 
 
 class CreateDatabaseBatch(ABC):
@@ -280,3 +281,72 @@ class CreateDatabaseBatchV1(CreateDatabaseBatch):
         return rows
 
 
+def load_xi(run_id):
+    # Load the xi vector for a given run_id from the database
+    with open(Path(__file__).parent.parent / 'output' / 'run_database_total.csv', 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if int(row[0]) == run_id:
+                row[0] = int(row[0])
+                row[1] = int(row[1])
+                row[2] = float(row[2])
+                row[3] = float(row[3])
+                row[4] = float(row[4])
+                row[5] = float(row[5])
+                row[6] = float(row[6])
+                row[7] = float(row[7])
+                row[8] = float(row[8])
+                row[9] = float(row[9])
+                row[10] = float(row[10])
+                row[11] = float(row[11])
+                row[12] = float(row[12])
+                row[13] = float(row[13])
+                row[14] = float(row[14])
+                row[15] = float(row[15])
+                row[16] = int(row[16])
+                row[17] = str(row[17])
+                row[18] = str(row[18])
+                return row
+
+    assert 0, f'Run ID {run_id} not found in database'
+
+
+class CreateDatabaseBatchV2(CreateDatabaseBatch):
+    """Second batch, run 2 aleatoric repeats for all V1 samples with nominal radial position of 7,8,9,10 mm
+    This should correspond to run_id from 210 to 329
+    """
+
+    def __init__(self):
+        super().__init__(batch_id=2)
+
+    def create_batch(self) -> list:
+        runs_per_loc = 2
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1 if ids else 0
+
+        # Copy from existing run_id 210 to 329
+        for old_run_id in range(210, 330):
+            xi_old = load_xi(old_run_id)
+            x_radial = xi_old[2]
+            #print(f'xi_old: {xi_old[16]}')
+
+            for _ in range(runs_per_loc):
+                assert np.round(x_radial, 0) in [7.0, 8.0, 9.0, 10.0], f'Expected x_radial to be 7,8,9,10 mm, got {x_radial}'
+                xi = resample_aleatoric_vars(xi_old)
+                xi[0] = run_id
+                xi[1] = self.batch_id
+
+                # Check only xi[0], xi[1] and xi[16] are different, all other xi values should be the same
+                for k in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18]:
+                    assert xi[k] == xi_old[k], f'xi[{k}] should be the same for aleatoric resampling'
+                for k in [0, 1]:
+                    assert xi[k] != xi_old[k], f'xi[{k}] should be different for aleatoric resampling'
+
+                #print(f'xi: {xi[16]}')
+                rows.append(xi)
+                run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
