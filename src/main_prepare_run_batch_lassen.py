@@ -164,10 +164,55 @@ def set_restart_frequency(config: dict, xz_coords: list, batch_id: int) -> None:
             restart_every = 4000
     elif batch_id == 2:
         restart_every = 4000
+    elif batch_id == 3:
+        restart_every = 10_000
+    elif batch_id == 4:
+        restart_every = 10_000
     else:
         raise ValueError(f"Unknown batch ID {batch_id}")
 
     config["IO"]["restartEveryTimeSteps"] = restart_every
+
+
+def set_tiles(config: dict, batch_id: int):
+    if batch_id == 1:
+        # 15M cells, 2 nodes (8 GPUs)
+        config['Mapping']['tiles'] = [16, 1, 1]
+        config['Mapping']['tilePerRank'] = [8, 1, 1]
+    elif batch_id == 2:
+        # 15M cells, 2 nodes (8 GPUs)
+        config['Mapping']['tiles'] = [16, 1, 1]
+        config['Mapping']['tilePerRank'] = [8, 1, 1]
+    elif batch_id == 3:
+        # 5M cells, 1 node (4 GPUs)
+        config['Mapping']['tiles'] = [16, 1, 1]
+        config['Mapping']['tilePerRank'] = [16, 1, 1]
+    elif batch_id == 4:
+        # 2M cells, 1 node (4 GPUs)
+        config['Mapping']['tiles'] = [16, 1, 1]
+        config['Mapping']['tilePerRank'] = [16, 1, 1]
+
+
+def set_wall_time(config: dict, batch_id: int) -> None:
+    """Set the wall time based on the batch ID."""
+    if batch_id == 1:
+        config['Mapping']['wallTime'] = 720
+    elif batch_id == 2:
+        config['Mapping']['wallTime'] = 720
+    elif batch_id == 3:
+        config['Mapping']['wallTime'] = 360
+    elif batch_id == 4:
+        config['Mapping']['wallTime'] = 180
+    else:
+        raise ValueError(f"Unknown batch ID {batch_id}")
+
+
+def set_grid():
+    pass  # TODO
+
+
+def set_time_steps():
+    pass # TODO
 
 
 def print_out_config_info(config: dict) -> None:
