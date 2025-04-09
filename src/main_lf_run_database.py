@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
 
-from uq_database import CreateDatabaseBatchV1, CreateDatabaseBatchV2
+from uq_database import CreateDatabaseBatchV1, CreateDatabaseBatchV2, CreateDatabaseBatchV3
 
 
 def create_pairplot(database_path, batch_id):
@@ -24,7 +24,8 @@ def main():
 
     database_creators = [
         CreateDatabaseBatchV1(),
-        CreateDatabaseBatchV2()
+        CreateDatabaseBatchV2(),
+        CreateDatabaseBatchV3(),
     ]
 
     # Add assertions here to check database never changes

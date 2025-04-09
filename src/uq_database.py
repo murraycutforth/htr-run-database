@@ -313,7 +313,9 @@ def load_xi(run_id):
 
 class CreateDatabaseBatchV2(CreateDatabaseBatch):
     """Second batch, run 2 aleatoric repeats for all V1 samples with nominal radial position of 7,8,9,10 mm
-    This should correspond to run_id from 210 to 329
+    This should correspond to run_id from 210 to 329.
+
+    NOTE: plans changed, no longer planning to run this batch.
     """
 
     def __init__(self):
@@ -353,8 +355,7 @@ class CreateDatabaseBatchV2(CreateDatabaseBatch):
 
 
 class CreateDatabaseBatchV3(CreateDatabaseBatch):
-    """Third batch, run the same xi as batch 1, but on a smaller grid. Additionally, run 2 aleatoric repeats
-    for all V1 samples with nominal radial position of 7,8,9,10 mm.
+    """Third batch, run the same xi as batch 1, but on a smaller grid.
 
     In this case although xi is the same, when we prepare the batch we need to modify the resolution, the BCs,
     the grid, the time step, the wall time limit, the output frequency, and tiles and tiles per rank.
@@ -364,7 +365,7 @@ class CreateDatabaseBatchV3(CreateDatabaseBatch):
         super().__init__(batch_id=3)
 
     def create_batch(self) -> list:
-        aleatoric_runs_per_loc = 2
+        #aleatoric_runs_per_loc = 2
         rows = []
         ids = self.load_existing_ids()
         run_id = max(ids) + 1 if ids else 0
@@ -374,27 +375,29 @@ class CreateDatabaseBatchV3(CreateDatabaseBatch):
             xi_old = load_xi(old_run_id)
             xi_old[0] = run_id
             xi_old[1] = self.batch_id
-            rows.append(xi_old)
+            rows.append(copy.deepcopy(xi_old))
             run_id += 1
 
-        # Then add aleatoric repeats for all V1 samples with nominal radial position of 7,8,9,10 mm
-        for old_run_id in range(210, 330):
-            xi_old = load_xi(old_run_id)
-            x_radial = xi_old[2]
+        return rows
 
-            for _ in range(aleatoric_runs_per_loc):
-                assert np.round(x_radial, 0) in [7.0, 8.0, 9.0, 10.0], f'Expected x_radial to be 7,8,9,10 mm, got {x_radial}'
-                xi = resample_aleatoric_vars(xi_old)
-                xi[0] = run_id
-                xi[1] = self.batch_id
+        ## Then add aleatoric repeats for all V1 samples with nominal radial position of 7,8,9,10 mm
+        #for old_run_id in range(210, 330):
+        #    xi_old = load_xi(old_run_id)
+        #    x_radial = xi_old[2]
 
-                # Check only xi[0], xi[1] and xi[16] are different, all other xi values should be the same
-                for k in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18]:
-                    assert xi[k] == xi_old[k], f'xi[{k}] should be the same for aleatoric resampling'
-                for k in [0, 1]:
-                    assert xi[k] != xi_old[k], f'xi[{k}] should be different for aleatoric resampling'
+        #    for _ in range(aleatoric_runs_per_loc):
+        #        assert np.round(x_radial, 0) in [7.0, 8.0, 9.0, 10.0], f'Expected x_radial to be 7,8,9,10 mm, got {x_radial}'
+        #        xi = resample_aleatoric_vars(xi_old)
+        #        xi[0] = run_id
+        #        xi[1] = self.batch_id
 
-                rows.append(xi)
-                run_id += 1
+        #        # Check only xi[0], xi[1] and xi[16] are different, all other xi values should be the same
+        #        for k in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18]:
+        #            assert xi[k] == xi_old[k], f'xi[{k}] should be the same for aleatoric resampling'
+        #        for k in [0, 1]:
+        #            assert xi[k] != xi_old[k], f'xi[{k}] should be different for aleatoric resampling'
+
+        #        rows.append(xi)
+        #        run_id += 1
 
 

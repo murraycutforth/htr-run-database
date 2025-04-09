@@ -9,5 +9,6 @@ do
     echo "Starting run $padded_i"
     cd $padded_i || exit
     ./run-htr-with-restarts_lsf.sh &
+    sleep 0.1
     cd ..
 done

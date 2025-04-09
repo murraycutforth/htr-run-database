@@ -85,7 +85,7 @@
    },
    "Integrator": {
       "TimeStep": {
-         "time1": 0.005,
+         "time1": 0.003,
          "time2": 4e-05,
          "time3": 0.0003,
          "time4": 0.0015,
@@ -271,18 +271,18 @@
    },
    "Mapping": {
       "tiles": [
-         8,
+         4,
          1,
          1
       ],
       "tilesPerRank": [
-         8,
+         4,
          1,
          1
       ],
       "sampleId": -1,
       "outDir": "",
-      "wallTime": 60
+      "wallTime": 250
    },
    "Grid": {
       "xNum": 288,
