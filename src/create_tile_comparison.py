@@ -3,11 +3,11 @@ import json
 import shutil
 
 # Define the original directory and JSON file
-original_dir = "/p/gpfs1/cutforth1/debug_5M"
+original_dir = "/p/gpfs1/cutforth1/PSAAP/debug_5M"
 json_file = "GG-combustor-default-lassen-5M.json"
 
 # Define the base name for the new directories
-new_dir_base = "TilesComparison_"
+new_dir_base = "/p/gpfs1/cutforth1/Lassen5MTilesComparison_"
 
 # Define 10 different configurations for tiles and tilesPerRank
 configurations = [
