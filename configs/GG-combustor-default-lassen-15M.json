@@ -1,28 +1,28 @@
 {
     "Case": {
-        "mDot_Ox": 0.0048,
-        "Tw": 300.0,
-        "yzStretch": 1.07,
-        "PInj": 134194.0,
-        "nozzleTransitionRate": 20.0,
-        "mDot_F": 0.00207,
-        "PInf": 125000.0,
-        "RadiusBurner": 0.0254,
         "TInf": 300.0,
-        "Radius_F_in": 0.002667,
-        "nozzleStretch": 1.0,
-        "Radius_F_out": 0.003175,
+        "PInf": 125000.0,
+        "Tw": 300.0,
         "LengthBurner": 0.1113,
         "LengthNozzle": 0.025,
-        "Radius_Ox": 0.001784,
-        "T_Ox": 241.8,
-        "U_background": 0.0,
+        "RadiusBurner": 0.0254,
         "RadiusNozzle": 0.003125,
-        "squircleStretch": 0.8,
-        "xStretch": 0.89,
-        "T_F": 282.2,
+        "Radius_Ox": 0.001784,
+        "Radius_F_in": 0.002667,
+        "Radius_F_out": 0.003175,
+        "mDot_Ox": 0.0048,
+        "mDot_F": 0.00207,
+        "PInj": 134194.0,
         "XCH4_Inj": 0.999999999999,
-        "InjectorTransitionLength": 0.05
+        "T_Ox": 241.8,
+        "T_F": 282.2,
+        "U_background": 0.0,
+        "InjectorTransitionLength": 0.05,
+        "nozzleTransitionRate": 20.0,
+        "xStretch": 0.89,
+        "yzStretch": 1.07,
+        "nozzleStretch": 1.0,
+        "squircleStretch": 0.8
     },
     "BC": {
         "yBCLeft": {
@@ -282,12 +282,12 @@
     },
     "Grid": {
         "xNum": 432,
-        "GridInput": {
-            "gridDir": "",
-            "type": "FromFile"
-        },
+        "yNum": 190,
         "zNum": 190,
-        "yNum": 190
+        "GridInput": {
+            "type": "FromFile",
+            "gridDir": ""
+        }
     },
     "IO": {
         "wrtRestart": true,
@@ -372,7 +372,7 @@
         "AveragesSamplingInterval": 10,
         "volumeProbes": [],
         "XYAverages": [],
-        "restartEveryTimeSteps": 2000,
+        "restartEveryTimeSteps": 4000,
         "YAverages": [],
         "XZAverages": [],
         "ZAverages": []
