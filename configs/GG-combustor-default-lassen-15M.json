@@ -186,7 +186,6 @@
             "Thickening": {
                 "delta0": 0.02449113751,
                 "ZBilger_min": 0.030309477624148966,
-                "burned_vol_limiter": 0,
                 "ZBilger_max": 0.4450369478707807,
                 "deltaL_invPolyZ": [
                     -0.16784668030489466,
