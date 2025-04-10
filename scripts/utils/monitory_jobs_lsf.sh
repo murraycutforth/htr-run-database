@@ -1,0 +1,1 @@
+watch -n 1 echo RUN:$(bjobs | grep "RUN" | wc -l) PEND:$(bjobs | grep "PEND" | wc -l)
