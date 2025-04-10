@@ -16,7 +16,7 @@ with open(output_file, mode='w', newline='') as csv_file:
 
     # Iterate over each TilesComparison directory
     for dir_name in sorted(os.listdir(base_dir)):
-        if dir_name.startswith("Lassen5MTilesComparison"):
+        if dir_name.startswith("Lassen2MTilesComparison"):
             print(dir_name)
 
             # Extract the configuration number from the directory name
@@ -26,7 +26,7 @@ with open(output_file, mode='w', newline='') as csv_file:
             console_file_path = os.path.join(base_dir, dir_name, "sample0", "console.txt")
 
             # Read the JSON file to extract tiles and tilesPerRank
-            json_file_path = os.path.join(base_dir, dir_name, "GG-combustor-default-lassen-5M.json")
+            json_file_path = os.path.join(base_dir, dir_name, "GG-combustor-default-lassen-2M.json")
             if os.path.exists(json_file_path):
                 with open(json_file_path, 'r') as json_file:
                     import json

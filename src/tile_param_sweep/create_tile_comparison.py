@@ -3,11 +3,11 @@ import json
 import shutil
 
 # Define the original directory and JSON file
-original_dir = "/p/gpfs1/cutforth1/PSAAP/debug_5M"
-json_file = "GG-combustor-default-lassen-5M.json"
+original_dir = "/p/gpfs1/cutforth1/PSAAP/debug_2M"
+json_file = "GG-combustor-default-lassen-2M.json"
 
 # Define the base name for the new directories
-new_dir_base = "/p/gpfs1/cutforth1/Lassen5MTilesComparison_"
+new_dir_base = "/p/gpfs1/cutforth1/Lassen2MTilesComparison_"
 
 # Define 10 different configurations for tiles and tilesPerRank
 configurations = [
@@ -16,13 +16,14 @@ configurations = [
     {"tiles": [4, 1, 1], "tilesPerRank": [4, 1, 1]},
     {"tiles": [8, 1, 1], "tilesPerRank": [8, 1, 1]},
     {"tiles": [16, 1, 1], "tilesPerRank": [16, 1, 1]},
-    {"tiles": [32, 1, 1], "tilesPerRank": [32, 1, 1]},
     {"tiles": [1, 2, 2], "tilesPerRank": [1, 2, 2]},
     {"tiles": [2, 2, 2], "tilesPerRank": [2, 2, 2]},
     {"tiles": [4, 2, 2], "tilesPerRank": [4, 2, 2]},
     {"tiles": [8, 2, 2], "tilesPerRank": [8, 2, 2]},
     {"tiles": [16, 2, 2], "tilesPerRank": [16, 2, 2]},
-    {"tiles": [32, 2, 2], "tilesPerRank": [32, 2, 2]},
+    {"tiles": [1, 4, 4], "tilesPerRank": [1, 4, 4]},
+    {"tiles": [2, 4, 4], "tilesPerRank": [2, 4, 4]},
+    {"tiles": [4, 4, 4], "tilesPerRank": [4, 4, 4]},
 ]
 
 # Load the original JSON file
