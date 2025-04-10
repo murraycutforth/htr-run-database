@@ -44,6 +44,8 @@ def get_path_to_common_case(xi: list, base_dir: Path, grid_size: str) -> Path:
         path = base_dir / f'location_{x_str}_0_{z_str}' / 'CommonCase' / xi[16]
     elif grid_size == '5M':
         path = base_dir / '04_GMRC_5M' / f'location_{x_str}_0_{z_str}' / 'CommonCase' / xi[16]
+    elif grid_size == '2M':
+        path = base_dir / '04_GMRC_2M' / f'location_{x_str}_0_{z_str}' / 'CommonCase' / xi[16]
     else:
         raise ValueError(f"Unknown grid size {grid_size}")
 
@@ -93,6 +95,12 @@ def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str) -> 
         config['Integrator']['TimeStep']['zone3'] = 3000 + xi[14]
         config['Integrator']['TimeStep']['zone4'] = 4000 + xi[14]
         config['Integrator']['TimeStep']['zone5'] = 5000 + xi[14]
+    elif grid_size == '2M':
+        config['Integrator']['TimeStep']['zone1'] = 1000 + xi[14]
+        config['Integrator']['TimeStep']['zone2'] = 2000 + xi[14]
+        config['Integrator']['TimeStep']['zone3'] = 3000 + xi[14]
+        config['Integrator']['TimeStep']['zone4'] = 4000 + xi[14]
+        config['Integrator']['TimeStep']['zone5'] = 5000 + xi[14]
     else:
         raise ValueError(f"Unknown grid size {grid_size}")
 
@@ -107,6 +115,10 @@ def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str) -> 
         pulseOffset = config['Flow']['laser']['pulseFWHM'] * 5
         assert config['Integrator']['TimeStep']['time1'] == 0.003
         config['Flow']['laser']['pulseTime'] = pulseOffset + (1000 + xi[14]) * 0.003  # Keep the pre-laser time step consistent so we are firing at same time
+    elif grid_size == '2M':
+        pulseOffset = config['Flow']['laser']['pulseFWHM'] * 5
+        assert config['Integrator']['TimeStep']['time1'] == 0.003
+        config['Flow']['laser']['pulseTime'] = pulseOffset + (1000 + xi[14]) * 0.003
     else:
         raise ValueError(f"Unknown grid size {grid_size}")
 
@@ -135,7 +147,9 @@ def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str) -> 
     if grid_size == '15M':
         config['Mapping']['wallTime'] = 720
     elif grid_size == '5M':
-        config['Mapping']['wallTime'] = 270
+        config['Mapping']['wallTime'] = 300
+    elif grid_size == '2M':
+        config['Mapping']['wallTime'] = 60
 
 
 
@@ -235,11 +249,13 @@ def main():
     grid_size = args.grid_size
     use_cuda = 1
 
-    assert grid_size in ['5M', '15M'], f"Grid size {grid_size} not recognized. Use 5M or 15M."
+    assert grid_size in ['2M', '5M', '15M'], f"Grid size {grid_size} not recognized. Use 5M or 15M."
     assert base_dir.exists(), f"Base directory {base_dir} does not exist"
     assert database_path.exists(), f"Database file {database_path} does not exist"
 
-    if grid_size == '5M':
+    if grid_size == '2M':
+        config_path = Path('configs/GG-combustor-default-lassen-2M.json')
+    elif grid_size == '5M':
         config_path = Path('configs/GG-combustor-default-lassen-5M.json')
     elif grid_size == '15M':
         config_path = Path('configs/GG-combustor-default-lassen-15M.json')

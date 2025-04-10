@@ -102,7 +102,7 @@ def main():
 
     plot_data(run_id_to_df)
 
-    plot_focal_coordinates('./../output/run_database_batch_1.csv')
+    plot_focal_coordinates('../../output/run_database_batch_1.csv')
 
 
 if __name__ == "__main__":
