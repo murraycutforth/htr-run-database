@@ -92,12 +92,12 @@ def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str) -> 
     elif grid_size == '5M':
         config['Integrator']['TimeStep']['zone1'] = 1000 + xi[14]  # use time1 until laser
         config['Integrator']['TimeStep']['zone2'] = 2000 + xi[14]  # use time2 for 1k iterations post-laser
-        config['Integrator']['TimeStep']['zone3'] = 2300 + xi[14]  # use time3 for 300 further iterations
+        config['Integrator']['TimeStep']['zone3'] = 3000 + xi[14]  # use time3 for 1k further iterations
         config['Integrator']['TimeStep']['zone4'] = 7300 + xi[14]  # use time4 for 5000 further iterations, then time5
     elif grid_size == '2M':
         config['Integrator']['TimeStep']['zone1'] = 1000 + xi[14]
         config['Integrator']['TimeStep']['zone2'] = 2000 + xi[14]
-        config['Integrator']['TimeStep']['zone3'] = 2300 + xi[14]
+        config['Integrator']['TimeStep']['zone3'] = 3000 + xi[14]
         config['Integrator']['TimeStep']['zone4'] = 7300 + xi[14]
     else:
         raise ValueError(f"Unknown grid size {grid_size}")
@@ -145,9 +145,9 @@ def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str) -> 
     if grid_size == '15M':
         config['Mapping']['wallTime'] = 720
     elif grid_size == '5M':
-        config['Mapping']['wallTime'] = 400
+        config['Mapping']['wallTime'] = 420
     elif grid_size == '2M':
-        config['Mapping']['wallTime'] = 200
+        config['Mapping']['wallTime'] = 240
 
 
 
