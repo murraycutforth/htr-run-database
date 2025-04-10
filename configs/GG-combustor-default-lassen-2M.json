@@ -86,15 +86,15 @@
    "Integrator": {
       "TimeStep": {
          "time1": 0.003,
-         "time2": 4e-05,
+         "time2": 0.00004,
          "time3": 0.0004,
-         "time4": 0.002,
-         "time5": 0.004,
+         "time4": 0.003,
+         "time5": 0.003,
          "type": "MultiStageConstantDeltaTime"
       },
       "resetTime": false,
       "startIter": 0,
-      "maxIter": 20000,
+      "maxIter": 30000,
       "implicitChemistry": false,
       "startTime": 0.0,
       "maxTime": 80.0,

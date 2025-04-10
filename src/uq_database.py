@@ -401,3 +401,24 @@ class CreateDatabaseBatchV3(CreateDatabaseBatch):
         #        run_id += 1
 
 
+class CreateDatabaseBatchV4(CreateDatabaseBatch):
+    """Fourth batch, run the same xi as batch 1, but on 2M grid
+    """
+
+    def __init__(self):
+        super().__init__(batch_id=4)
+
+    def create_batch(self) -> list:
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1 if ids else 0
+
+        # First copy from existing run_id 0 to 389
+        for old_run_id in range(0, 390):
+            xi_old = load_xi(old_run_id)
+            xi_old[0] = run_id
+            xi_old[1] = self.batch_id
+            rows.append(copy.deepcopy(xi_old))
+            run_id += 1
+
+        return rows
