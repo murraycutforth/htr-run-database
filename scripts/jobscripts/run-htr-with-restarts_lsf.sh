@@ -83,7 +83,10 @@ for i in $(seq 1 $NUM_RESTARTS); do
 
     if [[ $? -eq 1 ]]; then
         echo "No checkpoint found. Restarting from beginning." >> $LOGFILE
+        echo "Deleting contents of sample0: $(ls sample0)" >> $LOGFILE
         rm -r sample0
+        echo "Deleting LSF output: $(cat *.out)" >> $LOGFILE
+        rm *.out
         job_sub_msg=$($RUN_COMMAND)
         job_id=$(echo "$job_sub_msg" | grep -oP '(?<=Job <)\d+(?=>)')
         echo "Job resubmitted with ID $job_id" >> $LOGFILE

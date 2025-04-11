@@ -422,3 +422,59 @@ class CreateDatabaseBatchV4(CreateDatabaseBatch):
             run_id += 1
 
         return rows
+
+
+class CreateDatabaseBatchV5(CreateDatabaseBatch):
+    """Run 2M grid on streamwise locations from 3mm to 12mm, using the nominal X >= 4mm
+    """
+
+    def __init__(self):
+        super().__init__(batch_id=5)
+
+    def create_batch(self) -> list:
+        runs_per_loc = 10
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1 if ids else 0
+
+        nominal_laser_xs_batch_5 = [4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+        nominal_laser_zs_batch_5 = [3.0, 4.0, 5.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+
+        for x in nominal_laser_xs_batch_5:
+            for z in nominal_laser_zs_batch_5:
+                for _ in range(runs_per_loc):
+                    xi = sample_uq_vector_v1(x, z)
+                    rows.append([run_id, self.batch_id] + xi)
+                    run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
+
+
+class CreateDatabaseBatchV6(CreateDatabaseBatch):
+    """Run 2M grid on streamwise locations from 3mm to 12mm, using the nominal X >= 4mm
+    """
+
+    def __init__(self):
+        super().__init__(batch_id=6)
+
+    def create_batch(self) -> list:
+        runs_per_loc = 10
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1 if ids else 0
+
+        nominal_laser_xs_batch_5 = [4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+        nominal_laser_zs_batch_5 =  [14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 21.0, 22.0, 23.0, 24.0]
+
+        for x in nominal_laser_xs_batch_5:
+            for z in nominal_laser_zs_batch_5:
+                for _ in range(runs_per_loc):
+                    xi = sample_uq_vector_v1(x, z)
+                    rows.append([run_id, self.batch_id] + xi)
+                    run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows

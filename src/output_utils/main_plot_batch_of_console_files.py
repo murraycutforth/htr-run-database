@@ -91,18 +91,18 @@ def plot_focal_coordinates(csv_file):
 
 
 def main():
-    base_dir = Path('~/Downloads/run_batch_1/runs_batch_0001').expanduser()
+    base_dir = Path('~/Downloads/run_batch_4/runs_batch_0004').expanduser()
     assert base_dir.exists(), f"Base directory {base_dir} does not exist."
 
     run_id_to_df = {}
-    for i in range(0, 390):
+    for i in range(1200, 1410):
         data = read_console_files(base_dir, i)
         if data is not None:
             run_id_to_df[i] = data
 
     plot_data(run_id_to_df)
 
-    plot_focal_coordinates('../../output/run_database_batch_1.csv')
+    #plot_focal_coordinates('../../output/run_database_batch_1.csv')
 
 
 if __name__ == "__main__":

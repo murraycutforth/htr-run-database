@@ -5,6 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+BATCH=3
+#MAX_ITER=38780
+MAX_TIME=69
+
+# For 15M grid, time=70 corresponds to approx 38780 iterations
+
+
 def read_pressure_file(file_path: Path):
     assert file_path.exists(), f"File {file_path} does not exist."
     assert file_path.suffix == '.csv', f"File {file_path} is not a CSV file."
@@ -54,6 +61,9 @@ def get_average_pressure_trace(probe_ind_to_df):
     avg_pressure_trace['Time'] = iter_time_set['Time']
     avg_pressure_trace['Avg_Pressure'] = pd.concat([df['Pressure'] for df in probe_ind_to_df.values()], axis=1).mean(axis=1)
 
+    # Drop all rows where Time > 70.0
+    avg_pressure_trace = avg_pressure_trace[avg_pressure_trace['Time'] <= MAX_TIME + 1]
+
     return avg_pressure_trace
 
 
@@ -72,7 +82,7 @@ def plot_pressure_traces_2(run_id_to_df):
     # Two axes, one with complete runs and the other with incomplete runs
     fig, ax = plt.subplots(2, 1, figsize=(10, 10))
     for run_id, data in run_id_to_df.items():
-        if data['Iter'].max() < 36000:  # Example condition for incomplete runs
+        if data['Time'].max() < MAX_TIME:  # Example condition for incomplete runs
             ax[1].plot(data['Time'], data['Avg_Pressure'], label=f'Run {run_id}')
         else:
             ax[0].plot(data['Time'], data['Avg_Pressure'], label=f'Run {run_id}')
@@ -90,6 +100,8 @@ def plot_max_iter_histogram(run_id_to_df):
     # Plot histogram of max iterations
     max_iters = [df['Iter'].max() for df in run_id_to_df.values()]
     print(max_iters)
+    max_times = [df['Time'].max() for df in run_id_to_df.values()]
+    print(max_times)
     plt.hist(max_iters, bins=30)
     plt.xlabel('Max Iteration')
     plt.ylabel('Frequency')
@@ -111,7 +123,7 @@ def fill_missing_values(run_id_to_df):
     run_id_to_complete_runs = {}
     for run_id in run_ids:
         df = run_id_to_df[run_id]
-        if df['Iter'].max() >= 36000:
+        if df['Time'].max() >= MAX_TIME:
             run_id_to_complete_runs[run_id] = df
             new_run_id_to_df[run_id] = df
 
@@ -119,8 +131,8 @@ def fill_missing_values(run_id_to_df):
 
     for run_id in run_ids:
         df = run_id_to_df[run_id]
-        if df['Iter'].max() < 36000 and df['Iter'].max() > 5000:  # Example condition for incomplete runs
-            print(f"Run {run_id} is incomplete, filling missing values.")
+        if df['Time'].max() < MAX_TIME and df['Time'].max() > 20:  # Example condition for incomplete runs, otherwise just skip entirely
+            print(f"Run {run_id} is incomplete (max iter={df['Iter'].max()}, max time={df['Time'].max()}), filling missing values.")
             similarities = []
             for other_run_id in run_id_to_complete_runs.keys():
                 assert other_run_id != run_id
@@ -129,37 +141,59 @@ def fill_missing_values(run_id_to_df):
                 similarities.append((similarity, other_run_id))
             similarities.sort(key=lambda x: x[0])
             most_similar_runs = [run_id_to_df[similarities[0][1]], run_id_to_df[similarities[1][1]]]
+            most_similar_df_1 = most_similar_runs[0]
+            most_similar_df_2 = most_similar_runs[1]
             print(f"Most similar two runs for {run_id}: {[s[1] for s in similarities[:2]]}")
 
-            new_pressures = []
-            new_iters = []
+            current_time = df['Time'].max()
+            current_iter = df['Iter'].max()
+            rows_added = 0
 
-            for iter_val in range(df['Iter'].max() + 1, 36000 + 1):
-                if iter_val % 10 != 0:
-                    continue
+            # We want to keep adding rows until time > MAX_TIME
+            while current_time < MAX_TIME:
+                # Get the line from similar dfs with the smallest time greater than start time
+                df_1 = most_similar_df_1[most_similar_df_1['Time'] > current_time]
+                df_2 = most_similar_df_2[most_similar_df_2['Time'] > current_time]
 
-                # Get the average pressure from the most similar runs
-                p1 = most_similar_runs[0].loc[most_similar_runs[0]['Iter'] == iter_val, 'Avg_Pressure'].values
-                p2 = most_similar_runs[1].loc[most_similar_runs[1]['Iter'] == iter_val, 'Avg_Pressure'].values
-                assert len(p1) == 1, f"Expected one value for p1, got {len(p1)}"
-                assert len(p2) == 1, f"Expected one value for p2, got {len(p2)}"
+                assert len(df_1) > 0, f"Expected at least one row in df_1, got {len(df_1)}"
+                assert len(df_2) > 0, f"Expected at least one row in df_2, got {len(df_2)}"
+
+                # Get the row with smallest time from each
+                row_1 = df_1.iloc[0]
+                row_2 = df_2.iloc[0]
+                time_1 = row_1['Time']
+                time_2 = row_2['Time']
+                p1 = row_1['Avg_Pressure']
+                p2 = row_2['Avg_Pressure']
                 avg_pressure = 0.5 * (p1 + p2)
+                current_time = 0.5 * (time_1 + time_2)
+                current_iter = current_iter + 1
 
-                new_pressures.append(avg_pressure)
-                new_iters.append(iter_val)
-
-                new_row = {'Iter': iter_val, 'Time': np.nan, 'Avg_Pressure': avg_pressure}
+                new_row = {'Iter': current_iter, 'Time': current_time, 'Avg_Pressure': avg_pressure}
                 df = df._append(new_row, ignore_index=True)
 
-            print(f'New shape of df: {df.shape}')
+                current_time = df['Time'].max()
+                rows_added += 1
+
+            print(f'New shape of df: {df.shape}, added {rows_added} rows')
             new_run_id_to_df[run_id] = df
 
     run_id_to_df = new_run_id_to_df
 
-    # Now truncate all runs to 36,000 iters
+    # Now check max times of all dfs
     for run_id, df in run_id_to_df.items():
-        if df['Iter'].max() > 36000:
-            run_id_to_df[run_id] = df[df['Iter'] <= 36000]
+        print(f"Run {run_id} has max time {df['Time'].max()} and max iter {df['Iter'].max()}")
+
+    # Now truncate all runs to 36,000 iters
+    #for run_id, df in run_id_to_df.items():
+    #    if df['Iter'].max() > MAX_ITER:
+    #        run_id_to_df[run_id] = df[df['Iter'] <= MAX_ITER]
+
+    # Truncate all runs to same number of rows, using minimum length
+    min_length = min([len(df) for df in run_id_to_df.values()])
+    for run_id, df in run_id_to_df.items():
+        if len(df) > min_length:
+            run_id_to_df[run_id] = df.iloc[:min_length]
 
     # Check all runs are the same length now
     lengths = [len(df) for df in run_id_to_df.values()]
@@ -172,13 +206,19 @@ def fill_missing_values(run_id_to_df):
 
 
 def main():
-    base_dir = Path('~/Downloads/run_batch_1/runs_batch_0001').expanduser()
+    base_dir = Path(f'~/Downloads/run_batch_{BATCH}/runs_batch_{BATCH:04d}').expanduser()
     assert base_dir.exists(), f"Base directory {base_dir} does not exist."
 
     run_id_to_df = {}
 
-    for i in range(0, 390):
-        solution_dir = base_dir / f"{i:04d}" / "solution"
+    solution_dirs = list(base_dir.glob('*/solution'))
+
+    print(f'Found {len(list(solution_dirs))} solution directories in {base_dir}')
+
+    for solution_dir in solution_dirs:
+
+        i = int(solution_dir.parent.name)
+        print(f"Processing run {i:04d}...")
 
         try:
             assert solution_dir.exists(), f"Solution directory {solution_dir} does not exist."
@@ -193,8 +233,8 @@ def main():
             continue
 
     plot_pressure_traces(run_id_to_df)
-    #plot_pressure_traces_2(run_id_to_df)
-    #plot_max_iter_histogram(run_id_to_df)
+    plot_pressure_traces_2(run_id_to_df)
+    plot_max_iter_histogram(run_id_to_df)
 
     # Need to do something about runs which crashed early so
     # Impute missing values from other runs?
@@ -202,10 +242,6 @@ def main():
 
     run_id_to_df = fill_missing_values(run_id_to_df)
     plot_pressure_traces(run_id_to_df)
-
-    # TODO: get run_id to xi vector mapping (load from database)
-    # TODO: get run_id to volume burned mapping (from console files)
-    # TODO:
 
     # Write out to CSV after combining to one dataframe with new run_id row
     run_ids = np.array(list(run_id_to_df.keys()))
@@ -221,8 +257,8 @@ def main():
     pressures = np.array(pressures, dtype=np.float32)
     pressures = pressures.T
 
-    np.savez_compressed('pressure_traces.npz', pressure=pressures, run_id=run_ids)
-    print(f"Saved pressure traces to pressure_traces.npz with shape {pressures.shape}")
+    np.savez_compressed(f'pressure_traces_{BATCH}.npz', pressure=pressures, run_id=run_ids)
+    print(f"Saved pressure traces to pressure_traces_{BATCH}.npz with shape {pressures.shape}")
 
 
 
