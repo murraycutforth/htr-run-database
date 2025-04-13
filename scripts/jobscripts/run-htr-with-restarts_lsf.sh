@@ -59,6 +59,11 @@ find_latest_checkpoint() {
         # Remove leading zeros from the iterations
         iterations=$(echo "$iterations" | sed 's/^0*//')
 
+        # Handle case where all zeros are stripped
+        if [[ -z "$iterations" ]]; then
+            iterations=0
+        fi
+
         echo "$iterations"
     else
         echo "No checkpoints found." >> $LOGFILE
