@@ -73,7 +73,7 @@ def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str) -> 
     # When sampling xi, coords are (radial, azimuthal, streamwise)
     assert -1.0 <= xi[0] <= 13.0, f"xi[0] out of bounds: {xi[0]}"
     assert -1.0 <= xi[1] <= 1.0, f"xi[1] out of bounds: {xi[1]}"
-    assert 5.0 <= xi[2] <= 21.0, f"xi[2] out of bounds: {xi[2]}"
+    assert 2.0 <= xi[2] <= 25.0, f"xi[2] out of bounds: {xi[2]}"
     config['Flow']['laser']['focalLocation'][0] = xi[2] * 0.001 / LREF  # streamwise
     config['Flow']['laser']['focalLocation'][1] = xi[0] * 0.001 / LREF  # radial
     config['Flow']['laser']['focalLocation'][2] = xi[1] * 0.001 / LREF  # azimuthal
@@ -218,7 +218,7 @@ def set_restart_frequency(config: dict, xz_coords: list, batch_id: int) -> None:
         restart_every = 4000
     elif batch_id == 3:
         restart_every = 5000
-    elif batch_id == 4:
+    elif batch_id in [4, 5, 6, 7]:
         restart_every = 5000
     else:
         raise ValueError(f"Unknown batch ID {batch_id}")
