@@ -541,6 +541,14 @@ class CreateDatabaseBatchV7(CreateDatabaseBatch):
 
 
 class CreateDatabaseBatchV8(CreateDatabaseBatch):
+    def __init__(self):
+        super().__init__(batch_id=8)
+
+    def create_batch(self) -> list:
+        pass
+
+
+class CreateDatabaseBatchV9(CreateDatabaseBatch):
     """Using the 15M grid, we now create a batch of 64 runs using a basis extracted from the stochastic ID method
     """
     def __init__(self):
@@ -556,7 +564,7 @@ class CreateDatabaseBatchV8(CreateDatabaseBatch):
 
         print(f'Loaded basis xis with shape {self.basis_xis.shape}')
 
-        super().__init__(batch_id=8)
+        super().__init__(batch_id=9)
 
     def create_batch(self) -> list:
         rows = []
