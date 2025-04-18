@@ -454,14 +454,14 @@ class CreateDatabaseBatchV5(CreateDatabaseBatch):
 
 
 class CreateDatabaseBatchV6(CreateDatabaseBatch):
-    """Run 2M grid on streamwise locations from 3mm to 12mm, using the nominal X >= 4mm
+    """Run 2M grid on streamwise locations from 14mm to 24mm, using the nominal X >= 4mm
     """
 
     def __init__(self):
         super().__init__(batch_id=6)
 
     def create_batch(self) -> list:
-        runs_per_loc = 2
+        runs_per_loc = 10
         rows = []
         ids = self.load_existing_ids()
         run_id = max(ids) + 1 if ids else 0
@@ -545,13 +545,42 @@ class CreateDatabaseBatchV8(CreateDatabaseBatch):
         super().__init__(batch_id=8)
 
     def create_batch(self) -> list:
-        pass
+        runs_per_loc = 10
+        num_aleatoric_repeats = 2
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1 if ids else 0
+
+        nominal_laser_xs = [6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+        nominal_laser_zs =  [14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 21.0, 22.0]
+        aleatoric_nominal_laser_xs = [6.0, 7.0, 8.0, 9.0]
+
+        for x in nominal_laser_xs:
+            for z in nominal_laser_zs:
+                for _ in range(runs_per_loc):
+                    xi = sample_uq_vector_v1(x, z)
+                    rows.append([run_id, self.batch_id] + xi)
+                    run_id += 1
+
+                    if x in aleatoric_nominal_laser_xs:
+                        for _ in range(num_aleatoric_repeats):
+
+                            xi[14] = int(np.random.choice(TIMES_VEC))
+                            rows.append([run_id, self.batch_id] + xi)
+                            run_id += 1
+
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
 
 
 class CreateDatabaseBatchV9(CreateDatabaseBatch):
     """Using the 15M grid, we now create a batch of 64 runs using a basis extracted from the stochastic ID method
     """
     def __init__(self):
+        assert 0, 'Batch 9 is not implemented yet'
+
         # Load basis xis from file
         infile = Path(__file__).parent.parent / 'output' / 'basis_xis_64_2M.csv'
         assert infile.exists(), f'Basis file {infile} does not exist'
