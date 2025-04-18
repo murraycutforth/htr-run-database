@@ -25,14 +25,14 @@ This project contains scripts to automate the setup and execution of simulation 
 2. **Set Up the Batch:**
    Use the `prepare_run_batch.py` script to set up a batch of runs.
    ```bash
-   python src/prepare_run_batch.py <path_to_database> <base_dir>
+   python src/prepare_run_batch.py <path_to_database> <base_dir> <grid>
    ```
 
 ### Starting Simulation Runs
 
 Use the `set_off_runs.sh` script to start the simulation runs in the background.
 ```bash
-./scripts/set_off_runs.sh <start_run_id> <end_run_id>
+./scripts/set_off_runs.sh <start_run_id> <end_run_id> <max iterations>
 ```
 
 ## Requirements
@@ -40,3 +40,25 @@ Use the `set_off_runs.sh` script to start the simulation runs in the background.
 - Python 3.x
 - Bash
 - Required Python packages: `seaborn`, `matplotlib`, `pandas`, `numpy`
+
+
+## Reference scales used in simulation
+
+- pRef = 101325.0 [Pa]
+- Tref = 300.00 [K]
+- tRef = 1.1375e-5 [s]
+- Lref = 0.003175 [m]
+- uRef = 2.792e+02 [ms^1]
+- rhoRef = 1.2998553074969466 [kgm^3]
+- eRef   = 77950.983786892 [J/m^3]
+
+
+## Run batches
+
+1. 15M grid, matching experimental locations
+2. N/A
+3. 5M grid, matching experimental locations
+4. 2M grid, matching experimental locations
+5. 2M grid, sweeping over all z values (part 1)
+6. 2M grid, sweeping over all z values (part 2)
+7. 2M grid, 2 x aleatoric repeats of transition zone, plus fill in z=6,13,19

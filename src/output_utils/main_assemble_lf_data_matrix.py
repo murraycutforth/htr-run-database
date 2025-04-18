@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-BATCH=3
+BATCH=4
 #MAX_ITER=38780
 MAX_TIME=69
 

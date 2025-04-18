@@ -73,6 +73,7 @@ METH_RESTARTS = ['fluid_iter0000040000', 'fluid_iter0000060000',
                  'fluid_iter0000080000']  # Change amount of background methane
 SQUIRCS = ['S_0p70', 'S_0p80', 'S_0p90']  # Different squircularity
 
+
 # Aleatoric uncertainty parameters =================================
 # This is treated differently from the other epistemic parameters
 # We want to run multiple aleatoric samples for each epistemic sample
@@ -139,7 +140,7 @@ def sample_uq_vector_v1(nominal_x: float, nominal_z: float):
 
 def resample_aleatoric_vars(xi: list) -> list:
     xi = copy.deepcopy(xi)
-    assert isinstance(xi[16], int)
+    assert isinstance(xi[16], int), f'xi[16] should be an int, got {type(xi[16])}, value {xi[16]}'
     xi[16] = int(np.random.choice(TIMES_VEC))
     return xi
 
@@ -251,7 +252,7 @@ class CreateDatabaseBatch(ABC):
             assert isinstance(row[13], float)
             assert isinstance(row[14], float)
             assert isinstance(row[15], float)
-            assert isinstance(row[16], int)
+            assert isinstance(row[16], int), f'Expected int, got {type(row[16])}, value {row[16]}'
             assert isinstance(row[17], str)
             assert isinstance(row[18], str)
 
@@ -460,7 +461,7 @@ class CreateDatabaseBatchV6(CreateDatabaseBatch):
         super().__init__(batch_id=6)
 
     def create_batch(self) -> list:
-        runs_per_loc = 10
+        runs_per_loc = 2
         rows = []
         ids = self.load_existing_ids()
         run_id = max(ids) + 1 if ids else 0
@@ -478,3 +479,122 @@ class CreateDatabaseBatchV6(CreateDatabaseBatch):
         print(f'Created batch {self.batch_id} with {len(rows)} runs')
 
         return rows
+
+
+class CreateDatabaseBatchV7(CreateDatabaseBatch):
+    """2M grid, 2 aleatoric repeats of r=6mm to 9mm. Need to work out the run_ids for these runs.
+    """
+    def __init__(self):
+        super().__init__(batch_id=7)
+
+    def create_batch(self) -> list:
+        runs_per_loc = 2
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1 if ids else 0
+
+        run_id_range_6 = list(range(1590, 1950))
+        run_id_range_7 = list(range(2420, 2820))
+
+        for old_run_id in (run_id_range_6 + run_id_range_7):
+            xi_old = load_xi(old_run_id)
+            x_radial = xi_old[2]
+
+            for _ in range(runs_per_loc):
+                assert np.round(x_radial, 0) in [5.0, 6.0, 7.0, 8.0, 9.0], f'Expected x_radial to be 6,7,8,9 mm, got {x_radial}'
+                xi = resample_aleatoric_vars(xi_old)
+                xi[0] = run_id
+                xi[1] = self.batch_id
+
+                # Check only xi[0], xi[1] and xi[16] are different, all other xi values should be the same
+                for k in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18]:
+                    assert xi[k] == xi_old[k], f'xi[{k}] should be the same for aleatoric resampling'
+                for k in [0, 1]:
+                    assert xi[k] != xi_old[k], f'xi[{k}] should be different for aleatoric resampling'
+
+                rows.append(xi)
+                run_id += 1
+
+        # Now also add runs to fill in the gaps at z=6,13,19
+
+        runs_per_loc = 10
+        num_aleatoric_repeats = 2
+        nominal_laser_xs_batch_5 = [4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]
+        nominal_laser_zs_batch_5 = [6.0, 13.0, 19.0]
+
+        for x in nominal_laser_xs_batch_5:
+            for z in nominal_laser_zs_batch_5:
+                for _ in range(runs_per_loc):
+                    xi = sample_uq_vector_v1(x, z)
+                    rows.append([run_id, self.batch_id] + xi)
+                    run_id += 1
+
+                    if x in [6.0, 7.0, 8.0, 9.0]:
+                        for _ in range(num_aleatoric_repeats):
+                            xi[14] = int(np.random.choice(TIMES_VEC))
+                            rows.append([run_id, self.batch_id] + xi)
+                            run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
+
+
+class CreateDatabaseBatchV8(CreateDatabaseBatch):
+    """Using the 15M grid, we now create a batch of 64 runs using a basis extracted from the stochastic ID method
+    """
+    def __init__(self):
+        # Load basis xis from file
+        infile = Path(__file__).parent.parent / 'output' / 'basis_xis_64_2M.csv'
+        assert infile.exists(), f'Basis file {infile} does not exist'
+
+        with open(infile, 'r') as f:
+            reader = csv.reader(f)
+            rows = [row for row in reader]
+
+        self.basis_xis = np.array(rows, dtype=float)
+
+        print(f'Loaded basis xis with shape {self.basis_xis.shape}')
+
+        super().__init__(batch_id=8)
+
+    def create_batch(self) -> list:
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1
+
+        for xi in self.basis_xis:
+            xi = list(xi)
+
+            # Add peak_e_dot back in
+            beta = xi[5]
+            assert 1.0 <= beta <= 2.5, f'Expected beta to be between 1.0 and 2.5, got {beta}'
+            peak_e_dot = get_peak_e_dot(beta)
+            xi = xi[:6] + [peak_e_dot] + xi[6:]
+
+            # Add sample of TIMES_VEC back in
+            tvec = int(np.random.choice(TIMES_VEC))
+            xi = xi[:14] + [tvec] + xi[14:]
+
+            assert len(xi) == 17
+
+            # Convert squirc and meth_restart back to strings
+            meth_ind = int(xi[15])
+            assert meth_ind in [0, 1, 2]
+            xi[15] = METH_RESTARTS[meth_ind]
+
+            squirc_ind = int(xi[16])
+            assert squirc_ind in [0, 1, 2]
+            xi[16] = SQUIRCS[squirc_ind]
+
+            # Convert first 14 elements to floats
+            xi = [float(xi[i]) for i in range(14)] + [xi[14], xi[15], xi[16]]
+
+            xi = [run_id, self.batch_id] + list(xi)
+            rows.append(xi)
+            run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
+
