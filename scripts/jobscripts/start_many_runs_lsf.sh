@@ -2,7 +2,7 @@
 
 start=$1
 end=$2
-MAX_ITER=$3
+MAX_ITER=$3  # Typically 30000 for 2M, 55000 for 15M
 
 for i in $(seq $start $end)
 do

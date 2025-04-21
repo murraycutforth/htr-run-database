@@ -80,6 +80,7 @@ job_sub_msg=$($RUN_COMMAND)
 job_id=$(echo "$job_sub_msg" | grep -oP '(?<=Job <)\d+(?=>)')
 
 echo "Job submitted with first ID $job_id" >> $LOGFILE
+echo "MAX_ITER = $MAX_ITER" >> $LOGFILE
 
 for i in $(seq 1 $NUM_RESTARTS); do
     check_job_status $job_id  # We remain in this function until job is no longer in RUN or PEND state
