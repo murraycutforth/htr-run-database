@@ -220,7 +220,7 @@ def set_restart_frequency(config: dict, xz_coords: list, batch_id: int) -> None:
         restart_every = 4000
     elif batch_id == 3:
         restart_every = 5000
-    elif batch_id in [4, 5, 6, 7]:
+    elif batch_id in [4, 5, 6, 7, 8, 9, 10]:
         restart_every = 5000
     else:
         raise ValueError(f"Unknown batch ID {batch_id}")
