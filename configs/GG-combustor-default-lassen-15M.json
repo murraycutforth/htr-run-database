@@ -90,19 +90,19 @@
             "time2": 2e-05,
             "time3": 0.0002,
             "time4": 0.001,
-            "time5": 0.002,
+            "time5": 0.0015,
             "type": "MultiStageConstantDeltaTime"
         },
         "startIter": 0,
         "implicitChemistry": false,
         "startTime": 0.0,
-        "maxIter": 40000,
+        "maxIter": 55000,
         "EulerScheme": {
             "vorticityScale": 0.5,
             "type": "Hybrid",
             "shockCapturing": "WENO5"
         },
-        "maxTime": 1500.0
+        "maxTime": 80.0
     },
     "Flow": {
         "sgsModel": {

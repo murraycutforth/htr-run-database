@@ -579,10 +579,9 @@ class CreateDatabaseBatchV9(CreateDatabaseBatch):
     """Using the 15M grid, we now create a batch of 64 runs using a basis extracted from the stochastic ID method
     """
     def __init__(self):
-        assert 0, 'Batch 9 is not implemented yet'
 
         # Load basis xis from file
-        infile = Path(__file__).parent.parent / 'output' / 'basis_xis_64_2M.csv'
+        infile = Path(__file__).parent.parent / 'output' / 'basis_xis_64_2M_v2.csv'
         assert infile.exists(), f'Basis file {infile} does not exist'
 
         with open(infile, 'r') as f:
