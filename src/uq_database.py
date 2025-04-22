@@ -634,3 +634,59 @@ class CreateDatabaseBatchV9(CreateDatabaseBatch):
 
         return rows
 
+
+class CreateDatabaseBatchV10(CreateDatabaseBatch):
+    """As above, but using the values in basis_xis_32_filtered.csv
+    """
+    def __init__(self):# Load basis xis from file
+        infile = Path(__file__).parent.parent / 'output' / 'basis_xis_32_filtered.csv'
+        assert infile.exists(), f'Basis file {infile} does not exist'
+
+        with open(infile, 'r') as f:
+            reader = csv.reader(f)
+            rows = [row for row in reader]
+
+        self.basis_xis = np.array(rows, dtype=float)
+
+        print(f'Loaded basis xis with shape {self.basis_xis.shape}')
+        super().__init__(batch_id=10)
+
+    def create_batch(self) -> list:
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1
+
+        for xi in self.basis_xis:
+            xi = list(xi)
+
+            # Add peak_e_dot back in
+            beta = xi[5]
+            assert 1.0 <= beta <= 2.5, f'Expected beta to be between 1.0 and 2.5, got {beta}'
+            peak_e_dot = get_peak_e_dot(beta)
+            xi = xi[:6] + [peak_e_dot] + xi[6:]
+
+            # Add sample of TIMES_VEC back in
+            tvec = int(np.random.choice(TIMES_VEC))
+            xi = xi[:14] + [tvec] + xi[14:]
+
+            assert len(xi) == 17
+
+            # Convert squirc and meth_restart back to strings
+            meth_ind = int(xi[15])
+            assert meth_ind in [0, 1, 2]
+            xi[15] = METH_RESTARTS[meth_ind]
+
+            squirc_ind = int(xi[16])
+            assert squirc_ind in [0, 1, 2]
+            xi[16] = SQUIRCS[squirc_ind]
+
+            # Convert first 14 elements to floats
+            xi = [float(xi[i]) for i in range(14)] + [xi[14], xi[15], xi[16]]
+
+            xi = [run_id, self.batch_id] + list(xi)
+            rows.append(xi)
+            run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
