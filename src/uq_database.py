@@ -704,7 +704,10 @@ class CreateDatabaseBatchV11(CreateDatabaseBatch):
         ids = self.load_existing_ids()
         run_id = max(ids) + 1
 
-        for result_dir in Path('./../data/location_08_0_13').glob('*'):
+        result_dirs = Path('./../data/location_08_0_13').glob('*')
+        result_dirs = sorted(result_dirs, key=lambda x: int(x.name))
+
+        for result_dir in result_dirs:
 
             if not result_dir.is_dir():
                 continue
