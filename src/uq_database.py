@@ -7,6 +7,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from focal_position_offset import spark_x_offset_params, spark_y_offset_params, spark_z_offset_params
+from src.xi_utils import extract_xi_from_json
 
 
 # Reference length scale [m]
@@ -690,3 +691,39 @@ class CreateDatabaseBatchV10(CreateDatabaseBatch):
         print(f'Created batch {self.batch_id} with {len(rows)} runs')
 
         return rows
+
+
+class CreateDatabaseBatchV11(CreateDatabaseBatch):
+    """We load all xi values from Tony's runs in data/location_08_0_13, and set up an identical run on the 2M grid
+    """
+    def __init__(self):
+        super().__init__(batch_id=11)
+
+    def create_batch(self) -> list:
+        rows = []
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1
+
+        for result_dir in Path('./../data/location_08_0_13').glob('*'):
+
+            if not result_dir.is_dir():
+                continue
+
+            # We should now find a GG-combustor.json config file in here
+            config_file = result_dir / 'GG-combustor.json'
+
+            if not config_file.exists():
+                print(f'Config file {config_file} does not exist in {result_dir}, skipping')
+                continue
+
+            xi_15M = extract_xi_from_json(config_file)
+
+            rows.append([run_id, self.batch_id] + xi_15M)
+            run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
+
+
+
