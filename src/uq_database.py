@@ -728,5 +728,85 @@ class CreateDatabaseBatchV11(CreateDatabaseBatch):
 
         return rows
 
+class CreateDatabaseBatchV12(CreateDatabaseBatch):
+    """Create initial batch of 2M runs sampled randomly over entire combustor, used to start off the multi-fidelity DGP
+    """
+    def __init__(self):
+
+        # Fix most parameters to nominal values
+        self.const_params = {
+            'axial_l': U_AXIAL_LENGTH,
+            'alpha': 2.25,
+            'beta': 1.8,  # See Tony's slide 14
+            'energy': 500000.0,
+            'fwhm': 0.0018,  # See Tony's slide 14
+            'tf_beta': TF_BETA_REF,
+            'sL0': SL0_REF,
+            'arr_factor': 1.0,
+            'C_S': C_S_REF,
+            'mDot1': MDOT1_REF,
+            'mDot2': MDOT2_REF,
+        }
+
+        self.uniform_param_distributions = {
+            'laser_x': (0.0, 25.0),
+            'laser_y': (0.0, 0.0),
+            'laser_z': (0.0, 100.0),
+        }
+
+        self.meth_restarts = ['fluid_iter0000040000']
+        self.squircs = ['S_0p80']
+        self.times_vec = [1000, 2000, 3000, 4000, 5000, 6000]
+
+        super().__init__(batch_id=12)
+
+    def sample_uq_vector_v12(self):
+        xi = []
+
+        # First sample laser focal position (xi_0 to xi_2)
+        xi.append(np.random.uniform(*self.uniform_param_distributions['laser_x']))
+        xi.append(np.random.uniform(*self.uniform_param_distributions['laser_y']))
+        xi.append(np.random.uniform(*self.uniform_param_distributions['laser_z']))
+
+        # Then sample continuous UQ params defined by uniform distributions above (xi_3 to xi_13)
+        xi.append(self.const_params['axial_l'])
+        xi.append(self.const_params['alpha'])
+        xi.append(self.const_params['beta'])
+        peak_e_dot = get_peak_e_dot(xi[-1])
+        xi.append(peak_e_dot)
+        xi.append(self.const_params['fwhm'])
+        xi.append(self.const_params['tf_beta'])
+        xi.append(self.const_params['sL0'])
+        xi.append(self.const_params['arr_factor'])
+        xi.append(self.const_params['C_S'])
+        xi.append(self.const_params['mDot1'])
+        xi.append(self.const_params['mDot2'])
+
+        # Finally sample discrete UQ params (xi_14 to xi_16)
+        xi.append(int(np.random.choice(self.times_vec)))
+        xi.append(str(np.random.choice(self.meth_restarts)))
+        xi.append(str(np.random.choice(self.squircs)))
+
+        assert len(xi) == 17, f'xi should have length 17, got {len(xi)}'
+
+        return xi
+
+    def create_batch(self) -> list:
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1
+        num_runs = 200
+        rows = []
+
+        for _ in range(num_runs):
+            xi = self.sample_uq_vector_v12()
+            rows.append([run_id, self.batch_id] + xi)
+            run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
+
+
+
 
 
