@@ -1,0 +1,191 @@
+{
+  "Case": {
+    "TInf": 300.0,
+    "PInf": 125000.0,
+    "Tw": 300.0,
+    "LengthBurner": 0.1113,
+    "LengthNozzle": 0.025,
+    "RadiusBurner": 0.0254,
+    "RadiusNozzle": 0.003125,
+    "Radius_Ox": 0.001784,
+    "Radius_F_in": 0.002667,
+    "Radius_F_out": 0.003175,
+    "mDot_Ox": 0.00648,
+    "mDot_F": 0.00207,
+    "PInj": 134194.0,
+    "XCH4_Inj": 0.999999999999,
+    "T_Ox": 241.8,
+    "T_F": 282.2,
+    "U_background": 0.0,
+    "InjectorTransitionLength": 0.05,
+    "nozzleTransitionRate": 20.0,
+    "xStretch": 0.70,
+    "xStretch_sigmoid1": 0.35,
+    "xStretch_sigmoid2": 0.6,
+    "radial_stretch_type": "tanh",
+    "yzStretch": 5.2,
+    "yzStretch_position": 0.80,
+    "yzStretch_ratio": 3.0,
+    "nozzleStretch": 0.5,
+    "squircleStretch": 0.8
+  },
+  "Mapping": {
+    "tiles": [
+      8,
+      1,
+      1
+    ],
+    "tilesPerRank": [
+      4,
+      1,
+      1
+    ],
+    "sampleId": -1,
+    "outDir": "",
+    "wallTime": 120
+  },
+  "Grid": {
+    "xNum": 432,
+    "yNum": 190,
+    "zNum": 190,
+    "GridInput": {
+      "type": "FromFile",
+      "gridDir": "."
+    }
+  },
+  "Integrator": {
+    "startIter": 0,
+    "startTime": 0.0,
+    "resetTime": false,
+    "maxIter": 10000000,
+    "maxTime": 10000000.0,
+    "TimeStep": {
+      "type": "ConstantCFL",
+      "cfl": 0.5
+    },
+    "implicitChemistry": false,
+    "EulerScheme": {
+      "type": "Hybrid",
+      "vorticityScale": 0.5,
+      "shockCapturing": "TENO5"
+    }
+  },
+  "BC": {
+    "xBCLeft": {
+      "type": "PSAAP_RampedInflow",
+      "VelocityProfile": {
+        "type": "File",
+        "FileDir": ""
+      },
+      "P": -1.0,
+      "TemperatureProfile": {
+        "type": "File",
+        "FileDir": ""
+      },
+      "MixtureProfile": {
+        "type": "File",
+        "FileDir": ""
+      },
+      "Radius1": 1.0,
+      "Radius2": 2.0,
+      "Radius3": 3.0,
+      "mDot1": 0.1,
+      "mDot2": 0.1,
+      "tRamp": 0.0
+    },
+    "xBCRight": {
+      "type": "NSCBC_Outflow",
+      "P": -1.0
+    },
+    "yBCLeft": {
+      "type": "IsothermalWall",
+      "TemperatureProfile": {
+        "type": "Constant",
+        "temperature": 1.0
+      }
+    },
+    "yBCRight": {
+      "type": "IsothermalWall",
+      "TemperatureProfile": {
+        "type": "Constant",
+        "temperature": 1.0
+      }
+    },
+    "zBCLeft": {
+      "type": "IsothermalWall",
+      "TemperatureProfile": {
+        "type": "Constant",
+        "temperature": 1.0
+      }
+    },
+    "zBCRight": {
+      "type": "IsothermalWall",
+      "TemperatureProfile": {
+        "type": "Constant",
+        "temperature": 1.0
+      }
+    },
+    "bufferZone": {
+      "type": "Off"
+    }
+  },
+  "Flow": {
+    "mixture": {
+      "type": "CH41StExtMix"
+    },
+    "initCase": {
+      "type": "Restart",
+      "restartDir": ""
+    },
+    "resetMixture": false,
+    "initMixture": {
+      "Species": [
+        {
+          "Name": "CH4",
+          "MolarFrac": 1.0
+        }
+      ]
+    },
+    "bodyForce": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "turbForcing": {
+      "type": "OFF"
+    },
+    "laser": {
+      "type": "Off"
+    },
+    "sgsModel": {
+      "TurbViscModel": {
+        "type": "ConstantSmagorinsky",
+        "C_S": 0.16,
+        "C_I": 0.0
+      },
+      "Pr_t": 0.7,
+      "Sc_t": 0.7
+    },
+    "TFModel": {
+      "type": "Off"
+    }
+  },
+  "IO": {
+    "wrtRestart": true,
+    "restartEveryTimeSteps": 500,
+    "probesSamplingInterval": 10,
+    "probes": [],
+    "AveragesSamplingInterval": 10,
+    "ResetAverages": false,
+    "YZAverages": [],
+    "XZAverages": [],
+    "XYAverages": [],
+    "XAverages": [],
+    "YAverages": [],
+    "ZAverages": [],
+    "volumeProbes": []
+  },
+  "Efield": {
+    "type": "Off"
+  }
+}

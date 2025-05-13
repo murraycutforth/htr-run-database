@@ -704,7 +704,7 @@ class CreateDatabaseBatchV11(CreateDatabaseBatch):
         ids = self.load_existing_ids()
         run_id = max(ids) + 1
 
-        result_dirs = Path('./../data/location_08_0_13').glob('*')
+        result_dirs = Path('./../data/location_08_0_13').glob('[0-9][0-9][0-9][0-9]')
         result_dirs = sorted(result_dirs, key=lambda x: int(x.name))
 
         for result_dir in result_dirs:
@@ -807,6 +807,85 @@ class CreateDatabaseBatchV12(CreateDatabaseBatch):
         return rows
 
 
+class CreateDatabaseBatchV13(CreateDatabaseBatch):
+    """Create initial batch of 2M runs sampled randomly over entire combustor, used to start off the multi-fidelity DGP.
+    Use latin hypercube sampling.
+    """
+    def __init__(self):
+        self.xs, self.zs = self.xz_latin_hypercube(n=550)
 
+        self.const_params = {
+            'axial_l': U_AXIAL_LENGTH,
+            'alpha': 2.25,
+            'beta': 1.8,  # See Tony's slide 14
+            'energy': 500000.0,
+            'fwhm': 0.0018,  # See Tony's slide 14
+            'tf_beta': TF_BETA_REF,
+            'sL0': SL0_REF,
+            'arr_factor': 1.0,
+            'C_S': C_S_REF,
+            'mDot1': MDOT1_REF,
+            'mDot2': MDOT2_REF,
+        }
+        self.meth_restarts = ['fluid_iter0000040000']
+        self.squircs = ['S_0p80']
+        self.times_vec = [1000, 2000, 3000, 4000, 5000, 6000]
 
+        super().__init__(batch_id=13)
+
+    def xz_latin_hypercube(self, n):
+        # Create equally spaced points
+        x = np.linspace(0, 15, n)
+        z = np.linspace(0, 100, n)
+
+        # Create Latin hypercube sample
+        x_lhs = x[np.random.permutation(n)]
+        z_lhs = z[np.random.permutation(n)]
+
+        return x_lhs, z_lhs
+
+    def get_xi(self, x, z):
+        xi = []
+
+        # First sample laser focal position (xi_0 to xi_2)
+        xi.append(x)
+        xi.append(0.0)
+        xi.append(z)
+
+        # Then sample continuous UQ params defined by uniform distributions above (xi_3 to xi_13)
+        xi.append(self.const_params['axial_l'])
+        xi.append(self.const_params['alpha'])
+        xi.append(self.const_params['beta'])
+        peak_e_dot = get_peak_e_dot(xi[-1])
+        xi.append(peak_e_dot)
+        xi.append(self.const_params['fwhm'])
+        xi.append(self.const_params['tf_beta'])
+        xi.append(self.const_params['sL0'])
+        xi.append(self.const_params['arr_factor'])
+        xi.append(self.const_params['C_S'])
+        xi.append(self.const_params['mDot1'])
+        xi.append(self.const_params['mDot2'])
+
+        # Finally sample discrete UQ params (xi_14 to xi_16)
+        xi.append(int(np.random.choice(self.times_vec)))
+        xi.append(str(np.random.choice(self.meth_restarts)))
+        xi.append(str(np.random.choice(self.squircs)))
+
+        assert len(xi) == 17, f'xi should have length 17, got {len(xi)}'
+
+        return xi
+
+    def create_batch(self) -> list:
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1
+        rows = []
+
+        for i in range(len(self.xs)):
+            xi = self.get_xi(self.xs[i], self.zs[i])
+            rows.append([run_id, self.batch_id] + xi)
+            run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
 
