@@ -28,7 +28,6 @@ import time
 
 # load local modules
 sys.path.insert(0, os.path.expandvars("$HTR_DIR/scripts/modules"))
-import gridGen_new
 import HTRrestart_new
 
 from grid_generation import generate_grid, save_grid

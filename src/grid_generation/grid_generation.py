@@ -383,6 +383,9 @@ def generate_grid(config, show_plots=False):
 
 def save_grid(config, nodes):
     """Save the generated grid to disk"""
+
+    import gridGen_new # Import here, so we can run other functions locally for debugging
+
     tic = time.time()
     
     # Define node access function for gridGen_new
