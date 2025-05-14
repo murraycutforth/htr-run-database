@@ -12,17 +12,21 @@ import csv
 import os
 import stat
 
-# Path to reference config file
-#REF_CONFIG = 'configs/GG-combustor-default-lassen.json'
-
-# Path to CommonCase BC and grid files (currently hardcoded for me on dane.llnl.gov)
-# COMMON_CASE_DIR = '/p/lustre1/cutforth1/PSAAP/'
-
-# Path to dir where runs are executed and output written (again, hardcoded for me on dane.llnl.gov)
-# RUN_DIR = '/p/lustre1/cutforth1/PSAAP/'
 
 # Reference length scale [m]
 LREF = 0.003175
+
+
+def get_path_to_global_common_case(base_dir: Path, grid_size: str) -> Path:
+    if grid_size == '15M':
+        path = base_dir / '04_GMRC_15M_global' / 'CommonCase'
+    elif grid_size == '2M':
+        path = base_dir / '04_GMRC_2M_global' / 'CommonCase'
+    else:
+        raise ValueError(f"Unknown grid size {grid_size}")
+
+    assert path.exists(), f"Common case directory {path} does not exist"
+    return path
 
 
 def get_path_to_common_case(xi: list, base_dir: Path, grid_size: str) -> Path:
@@ -38,7 +42,6 @@ def get_path_to_common_case(xi: list, base_dir: Path, grid_size: str) -> Path:
         common_z_locs = [3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0]
     else:
         raise ValueError(f"Unknown grid size {grid_size}")
-
 
     # Convert
     xi_x = xi[0]  # Radial
@@ -64,9 +67,12 @@ def get_path_to_common_case(xi: list, base_dir: Path, grid_size: str) -> Path:
     return path
 
 
-def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str) -> None:
+def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str, use_global_grid: bool) -> None:
     """Edit the given JSON data with the sampled parameters."""
-    common_case_dir = get_path_to_common_case(xi, base_dir, grid_size)
+    if use_global_grid:
+        common_case_dir = get_path_to_global_common_case(base_dir, grid_size)
+    else:
+        common_case_dir = get_path_to_common_case(xi, base_dir, grid_size)
 
     # Update laser focal location
     # xi is given in mm, so multiply by 0.001 and divide by LREF to get dimensionless units
@@ -219,10 +225,8 @@ def set_restart_frequency(config: dict, xz_coords: list, batch_id: int) -> None:
         restart_every = 4000
     elif batch_id == 3:
         restart_every = 5000
-    elif batch_id in [4, 5, 6, 7, 8, 9, 10]:
-        restart_every = 5000
     else:
-        raise ValueError(f"Unknown batch ID {batch_id}")
+        restart_every = 5000
 
     config["IO"]["restartEveryTimeSteps"] = restart_every
 
@@ -247,6 +251,7 @@ def parse_args():
     parser.add_argument('database', type=str, help='Path to the database file, e.g. output/run_database_batch_1.csv')
     parser.add_argument('base_dir', type=str, help='Base directory for the runs, e.g. /p/lustre1/cutforth1/PSAAP/ or /p/gpfs1/cutforth1/PSAAP/')
     parser.add_argument('grid_size', type=str, help='Grid size for the runs, e.g. 5M or 15M')
+    parser.add_argument('--use_global_grid', action='store_true', help='Use the global grid instead of the local grid')
     return parser.parse_args()
 
 
@@ -256,6 +261,7 @@ def main():
     base_dir = Path(args.base_dir)
     database_path = Path(args.database)
     grid_size = args.grid_size
+    use_global_grid = args.use_global_grid
     use_cuda = 1
 
     assert grid_size in ['2M', '5M', '15M'], f"Grid size {grid_size} not recognized. Use 5M or 15M."
@@ -299,7 +305,7 @@ def main():
         run_dir.mkdir()
 
         config = ref_config.copy()
-        update_json_data(config, xi, base_dir, grid_size)
+        update_json_data(config, xi, base_dir, grid_size, use_global_grid)
         set_restart_frequency(config, nominal_xz_coords, batch_id)
 
         # Write the config to a new file

@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from scipy.interpolate import interp1d
 
-from focal_position_offset import spark_x_offset_params, spark_y_offset_params, spark_z_offset_params
+from src.focal_position_offset import spark_x_offset_params, spark_y_offset_params, spark_z_offset_params
 from src.xi_utils import extract_xi_from_json
 
 

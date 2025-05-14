@@ -86,7 +86,7 @@ def spark_z_offset_params(x: float, z: float) -> dict:
 def load_grouped_spark_data():
     # Load spark data from test summary spreadsheet, grouped by nominal location
     # Return a dict of (nominal position) -> (list of offsets)
-    sheet_path = './../Test Summary Sheet 20211220 - Sheet1.csv'
+    sheet_path = 'Test Summary Sheet 20211220 - Sheet1.csv'
     df = pd.read_csv(sheet_path, header=0)
     nominal_cols = ['Spark X Location [mm]', 'Spark Z Location [mm]']
     measured_cols = ['Spark X Measured [mm]', 'Spark Z Measured [mm]']

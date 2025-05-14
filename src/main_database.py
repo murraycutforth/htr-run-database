@@ -7,15 +7,19 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
+from pathlib import Path
 
-from uq_database import *
+from src.uq_database import *
 
 
 def create_pairplot(database_path, batch_id):
-    df = pd.read_csv(database_path, header=0)
-    sns.pairplot(df, diag_kind='kde')
-    plt.savefig(f'./../output/database_pairplot_batch_{batch_id}.png')
-    plt.close()
+    plot_path = Path(f'output/database_pairplot_batch_{batch_id}.png')
+
+    if not plot_path.exists():
+        df = pd.read_csv(database_path, header=0)
+        sns.pairplot(df, diag_kind='kde')
+        plt.savefig(f'output/database_pairplot_batch_{batch_id}.png')
+        plt.close()
 
 
 def main():
