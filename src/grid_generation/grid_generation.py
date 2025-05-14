@@ -416,7 +416,7 @@ def save_grid(config, nodes):
     
     # Save cell centers
     cc = np.stack((xGrid, yGrid, zGrid), axis=-1)
-    np.savez('00cellCentres.npz', cc=cc)
+    np.savez('00cellCentres.npz', arr_0=cc)
     
     print('Xgrid.shape:', xGrid.shape)
     print('nodes.shape:', nodes.shape)
