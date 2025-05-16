@@ -269,7 +269,6 @@ def main():
 
     plot_pressure_traces(run_id_to_df_resampled)
 
-    # Write out to CSV after combining to one dataframe with new run_id row
     run_ids = np.array(list(run_id_to_df_resampled.keys()))
 
     pressures = []
@@ -280,6 +279,8 @@ def main():
     # Check that all pressures are the same length
     if len(set([len(p) for p in pressures])) != 1:
         raise ValueError(f"Not all pressure traces are the same length: {set([len(p) for p in pressures])}")
+    assert len(pressures) == len(xis)
+
     pressures = np.array(pressures, dtype=np.float32)
     pressures = pressures.T  # Transpose to have shape (num_time_points, num_runs)
 
@@ -291,7 +292,7 @@ def main():
 
     assert Path(f'pressure_traces_{run_dir.stem}.npz').exists() == False, f"File pressure_traces_{run_dir.stem}.npz already exists. Please delete it before running this script."
 
-    np.savez_compressed(f'pressure_traces_{run_dir.stem}.npz', pressure=pressures, run_id=run_ids, time_points=time_points)
+    np.savez_compressed(f'pressure_traces_{run_dir.stem}.npz', pressure=pressures, run_id=run_ids, time_points=time_points, xis=xis)
     print(f"Saved pressure traces to pressure_traces_{run_dir.stem}.npz with shape {pressures.shape}")
 
 

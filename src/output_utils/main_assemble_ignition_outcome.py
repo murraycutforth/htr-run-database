@@ -54,11 +54,12 @@ def plot_ignitions(xis, chis):
                        plt.Line2D([0], [0], marker='o', color='w',
                                   markerfacecolor='blue', label='No Ignition',
                                   markersize=8)]
-    ax.legend(handles=legend_elements)
+    # ax.legend(handles=legend_elements)
 
     ax.set_xlabel('Radial Distance [mm]')
     ax.set_ylabel('Streamwise Distance [mm]')
     ax.set_aspect('equal')
+    ax.axis('off')
 
     plt.show()
 

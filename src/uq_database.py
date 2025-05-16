@@ -972,3 +972,41 @@ class CreateDatabaseBatchV14(CreateDatabaseBatch):
 
         return rows
 
+
+class CreateDatabaseBatchV15(CreateDatabaseBatch):
+    """2x Aleatoric repeats for batch 11
+    This is run_id 6446 to 6744
+    """
+    def __init__(self):
+        super().__init__(batch_id=15)
+
+    def create_batch(self) -> list:
+        old_run_id_start = 6446
+        old_run_id_end = 6744
+        num_aleatoric_repeats = 4
+
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1
+        rows = []
+
+        for run_id_old in range(old_run_id_start, old_run_id_end + 1):
+            xi_old = load_xi(run_id_old)
+            xi = xi_old.copy()
+
+            for _ in range(num_aleatoric_repeats):
+                new_lag_time = int(np.random.choice(TIMES_VEC))
+                xi[0] = run_id
+                xi[1] = self.batch_id
+                xi[16] = new_lag_time
+
+                # Check only xi[0], xi[1] and xi[16] are different, all other xi values should be the same
+                for k in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18]:
+                    assert xi[k] == xi_old[k], f'xi[{k}] should be the same for aleatoric resampling'
+                for k in [0, 1]:
+                    assert xi[k] != xi_old[k], f'xi[{k}] should be different for aleatoric resampling'
+
+                rows.append(xi.copy())
+                run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+        return rows
