@@ -974,7 +974,7 @@ class CreateDatabaseBatchV14(CreateDatabaseBatch):
 
 
 class CreateDatabaseBatchV15(CreateDatabaseBatch):
-    """2x Aleatoric repeats for batch 11
+    """4x Aleatoric repeats for batch 11
     This is run_id 6446 to 6744
     """
     def __init__(self):
