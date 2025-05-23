@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # These are some hardcoded non-dimensional times
-MAX_TIME=45  # 700 us post-laser
+MAX_TIME=60  # 700 us post-laser
 MAX_LASER_DELAY=21  # Based on the zone1 time step and the laser delay iterations
 
 logger = logging.getLogger(__name__)

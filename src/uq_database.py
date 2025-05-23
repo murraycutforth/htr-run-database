@@ -239,7 +239,7 @@ class CreateDatabaseBatch(ABC):
             assert len(row) == 19, f'Expected 19 columns, got {len(row)}, row: {row}'
             assert isinstance(row[0], int)
             assert isinstance(row[1], int)
-            assert isinstance(row[2], float)
+            assert isinstance(row[2], float), f'Expected float column, got {type(row[2])}, value: {row[2]}'
             assert isinstance(row[3], float)
             assert isinstance(row[4], float)
             assert isinstance(row[5], float)
@@ -252,9 +252,9 @@ class CreateDatabaseBatch(ABC):
             assert isinstance(row[12], float)
             assert isinstance(row[13], float)
             assert isinstance(row[14], float)
-            assert isinstance(row[15], float)
+            assert isinstance(row[15], float), f'Expected float column, got {type(row[15])}, value: {row[15]}'
             assert isinstance(row[16], int), f'Expected int, got {type(row[16])}, value {row[16]}'
-            assert isinstance(row[17], str)
+            assert isinstance(row[17], str), f'Expected str, got {type(row[17])}, value {row[17]}'
             assert isinstance(row[18], str)
 
 
@@ -1009,4 +1009,49 @@ class CreateDatabaseBatchV15(CreateDatabaseBatch):
                 run_id += 1
 
         print(f'Created batch {self.batch_id} with {len(rows)} runs')
+        return rows
+
+
+class CreateDatabaseBatchV16(CreateDatabaseBatch):
+    """Load the 200 xi values from output/all_xis_r8.npy and use those to construct batch
+
+    This should be run on 15M grid, using global mesh, with very low output freq (20,000)
+    """
+
+    def __init__(self):
+        self.xis = np.load(Path(__file__).parent.parent / 'output' / 'all_xis_r8.npy')
+        print(f'Loaded {len(self.xis)} xi values from file')
+        assert len(self.xis) == 200
+        super().__init__(batch_id=16)
+
+    def create_batch(self) -> list:
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1 if ids else 0
+        rows = []
+
+        for xi in self.xis:
+            assert len(xi) == 15
+            xi = list(xi)
+
+            # Cast the first 13 values to float
+            xi = [float(x) for x in xi[:13]] + [str(x) for x in xi[13:]]
+            assert len(xi) == 15
+
+            # Add back in edot
+            beta = xi[5]
+            peak_e_dot = get_peak_e_dot(beta)
+            xi = list(xi[:6]) + [peak_e_dot] + list(xi[6:])
+            assert len(xi) == 16
+
+            # Sample new times_vec value
+            times_vec = int(np.random.choice(TIMES_VEC))
+            xi = xi[:14] + [times_vec] + xi[14:]
+            assert len(xi) == 17, f'xi should have length 17, got {len(xi)}'
+
+            rows.append([run_id, self.batch_id] + list(xi))
+            assert len(rows[-1]) == 19
+            run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
         return rows

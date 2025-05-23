@@ -12,17 +12,17 @@ from dataclasses import dataclass
 from src.output_utils.main_assemble_pressure_trace_matrix import read_all_pressure_files, get_average_pressure_trace, \
     load_xi
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 # Configuration
 @dataclass
 class Config:
     MAX_LASER_DELAY: int = 21  # Based on the zone1 time step and the laser delay iterations
-    MAX_TIME: int = 30  # Drop anything shorter than this, as it has crashed early
+    MAX_TIME: int = 60  # tref is 1.1375e-5 [s] so 60 -> 700us
     VALID_LASER_DELAYS: Tuple[int] = (1000, 2000, 3000, 4000, 5000, 6000)
     IGNITION_THRESHOLD: float = 0.1
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def parse_args() -> argparse.Namespace:

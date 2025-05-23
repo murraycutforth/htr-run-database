@@ -17,6 +17,5 @@ else
 fi
 
 rsync -av --include='*/' --include='*/solution/*.out' --include='*/solution/*.csv' --include='*/solution/console-*.txt' --exclude '*' --rsync-path="env -i rsync" ${USER}@${HOST}:${RUN_BATCH_DIR} /Users/murray/Downloads/runs_batch_${BATCH}
-
 python -m src.output_utils.main_assemble_pressure_trace_matrix --run-dir /Users/murray/Downloads/runs_batch_${BATCH}
 python -m src.output_utils.main_assemble_ignition_outcome --run-dir /Users/murray/Downloads/runs_batch_${BATCH}
