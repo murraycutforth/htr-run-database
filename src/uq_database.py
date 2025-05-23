@@ -1048,9 +1048,87 @@ class CreateDatabaseBatchV16(CreateDatabaseBatch):
             xi = xi[:14] + [times_vec] + xi[14:]
             assert len(xi) == 17, f'xi should have length 17, got {len(xi)}'
 
+            # Hard-code meth restart to 40000
+            xi[-2] = 'fluid_iter0000040000'
+
             rows.append([run_id, self.batch_id] + list(xi))
             assert len(rows[-1]) == 19
             run_id += 1
+
+        print(f'Created batch {self.batch_id} with {len(rows)} runs')
+
+        return rows
+
+
+class CreateDatabaseBatchV17(CreateDatabaseBatch):
+    """Create test set batch for DGP project. 5 aleatoric repeats per location.
+    """
+    def __init__(self):
+        selected_points = np.load(Path(__file__).parent.parent / 'output' / 'batch_17_xz.npy')
+        assert len(selected_points) == 20
+        self.xs = selected_points[:, 0]
+        self.zs = selected_points[:, 1]
+
+        self.const_params = {
+            'axial_l': U_AXIAL_LENGTH,
+            'alpha': 2.25,
+            'beta': 1.8,  # See Tony's slide 14
+            'energy': 500000.0,
+            'fwhm': 0.0018,  # See Tony's slide 14
+            'tf_beta': TF_BETA_REF,
+            'sL0': SL0_REF,
+            'arr_factor': 1.0,
+            'C_S': C_S_REF,
+            'mDot1': MDOT1_REF,
+            'mDot2': MDOT2_REF,
+            'squircs': 'S_0p80',
+            'meth_restarts': 'fluid_iter0000040000'
+        }
+        self.times_vec = [1000, 2000, 3000, 4000, 5000]
+
+        super().__init__(batch_id=17)
+
+    def get_xi(self, x, z, times):
+        xi = []
+
+        # First sample laser focal position (xi_0 to xi_2)
+        xi.append(x)
+        xi.append(0.0)
+        xi.append(z)
+
+        # Then sample continuous UQ params defined by uniform distributions above (xi_3 to xi_13)
+        xi.append(self.const_params['axial_l'])
+        xi.append(self.const_params['alpha'])
+        xi.append(self.const_params['beta'])
+        peak_e_dot = get_peak_e_dot(xi[-1])
+        xi.append(peak_e_dot)
+        xi.append(self.const_params['fwhm'])
+        xi.append(self.const_params['tf_beta'])
+        xi.append(self.const_params['sL0'])
+        xi.append(self.const_params['arr_factor'])
+        xi.append(self.const_params['C_S'])
+        xi.append(self.const_params['mDot1'])
+        xi.append(self.const_params['mDot2'])
+
+        # Finally sample discrete UQ params (xi_14 to xi_16)
+        xi.append(times)
+        xi.append(self.const_params['meth_restarts'])
+        xi.append(self.const_params['squircs'])
+
+        assert len(xi) == 17, f'xi should have length 17, got {len(xi)}'
+
+        return xi
+
+    def create_batch(self) -> list:
+        ids = self.load_existing_ids()
+        run_id = max(ids) + 1
+        rows = []
+
+        for i in range(len(self.xs)):
+            for times in self.times_vec:
+                xi = self.get_xi(self.xs[i], self.zs[i], times)
+                rows.append([run_id, self.batch_id] + xi)
+                run_id += 1
 
         print(f'Created batch {self.batch_id} with {len(rows)} runs')
 
