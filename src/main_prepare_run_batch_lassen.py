@@ -227,6 +227,8 @@ def set_restart_frequency(config: dict, xz_coords: list, batch_id: int) -> None:
         restart_every = 5000
     elif batch_id == 16:
         restart_every = 20000
+    elif batch_id == 18:
+        restart_every = 20000
     else:
         restart_every = 5000
 
