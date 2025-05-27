@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 @dataclass
 class Config:
     MAX_LASER_DELAY: int = 21  # Based on the zone1 time step and the laser delay iterations
-    MAX_TIME: int = 60  # tref is 1.1375e-5 [s] so 60 -> 700us
+    MAX_TIME: int = 40  # tref is 1.1375e-5 [s] so 60 -> 700us
     VALID_LASER_DELAYS: Tuple[int] = (1000, 2000, 3000, 4000, 5000, 6000)
     IGNITION_THRESHOLD: float = 0.1
 
@@ -108,12 +108,11 @@ def plot_ignitions(xis: np.ndarray, chis: np.ndarray) -> None:
     zs = all_xi[:, 4].astype(float)
     fig, ax = plt.subplots(dpi=200)
     colors = ['red' if chi else 'blue' for chi in chis]
-    ax.scatter(xs, zs, s=10, c=colors, alpha=1)
+    ax.scatter(xs, zs, s=10, c=colors, alpha=0.5)
 
     ax.set_xlabel('Radial Distance [mm]')
     ax.set_ylabel('Streamwise Distance [mm]')
     ax.set_aspect('equal')
-    ax.axis('off')
 
     plt.show()
 

@@ -222,49 +222,95 @@ def plot_grid_spacing(x, y, z, figwidth=10, fac_fig=1.0, cm=0.393701):
     
 
 def plot_grid_2d(x, y, z, xNum, yNum, zNum, figwidth=10, fac_fig=1.0, cm=0.393701):
-    """Plot 2D views of the grid"""
-    # Show the grid in center XY plane
+    """Plot 2D views of the grid"""    
+    
+    # Show the grid in center XY plane, with zoom regions highlighted on the top panel
     current_width = 2 * figwidth * cm * fac_fig
-    fig = plt.figure(3, figsize=[1.0 * current_width, 0.90 * current_width])
+    fig = plt.figure(3, figsize=[1.0 * current_width, 0.20 * current_width])
     plt.clf()
     iz = int(zNum / 2.0)
-    grid_skip = 1
+    grid_skip = 4
     xiter = np.arange(0, xNum, grid_skip)
-    yiter = np.arange(0, yNum, grid_skip)
+    yiter = np.arange(0, yNum + 1, grid_skip)
     grid_skip_zoom = 1
     xiter_zoom = np.arange(0, xNum, grid_skip_zoom)
-    yiter_zoom = np.arange(0, yNum, grid_skip_zoom)
+    yiter_zoom = np.arange(0, yNum + 1, grid_skip_zoom)
+    
+    # Define zoom box limits
+    zoom1_xlim = (0.00, 0.015)
+    zoom1_ylim = (0.00, 0.015)
+    zoom2_xlim = (0.10, 0.115)
+    zoom2_ylim = (0.00, 0.015)
     
     # Global
-    ax1 = plt.subplot(211)
+    ax1 = plt.subplot(131)
     for j in yiter:
-        ax1.plot(x[iz, j, :], y[iz, j, :], 'b-', linewidth=0.3)
+        ax1.plot(x[iz, j, :], y[iz, j, :], 'b-', linewidth=0.2, alpha=0.5)
     for i in xiter:
-        ax1.plot(x[iz, :, i], y[iz, :, i], 'b-', linewidth=0.3)
+        ax1.plot(x[iz, :, i], y[iz, :, i], 'b-', linewidth=0.2, alpha=0.5)
     ax1.set_aspect('equal', adjustable='box')
     
+    # Highlight zoom regions with rectangles
+    import matplotlib.patches as patches
+    rect1 = patches.Rectangle(
+        (zoom1_xlim[0], zoom1_ylim[0]),
+        zoom1_xlim[1] - zoom1_xlim[0],
+        zoom1_ylim[1] - zoom1_ylim[0],
+        linewidth=2.5, edgecolor='red', facecolor='none'
+    )
+    rect2 = patches.Rectangle(
+        (zoom2_xlim[0], zoom2_ylim[0]),
+        zoom2_xlim[1] - zoom2_xlim[0],
+        zoom2_ylim[1] - zoom2_ylim[0],
+        linewidth=2.5, edgecolor='green', facecolor='none'
+    )
+    ax1.add_patch(rect1)
+    ax1.add_patch(rect2)
+    
     # Zoom 1 and 2
-    ax2 = plt.subplot(223)
-    ax3 = plt.subplot(224)
+    ax2 = plt.subplot(132)
+    ax3 = plt.subplot(133)
     for j in yiter_zoom:
-        ax2.plot(x[iz, j, :], y[iz, j, :], 'b-', linewidth=0.3)
-        ax3.plot(x[iz, j, :], y[iz, j, :], 'b-', linewidth=0.3)
+        ax2.plot(x[iz, j, :], y[iz, j, :], 'b-', linewidth=0.2, alpha=0.5)
+        ax3.plot(x[iz, j, :], y[iz, j, :], 'b-', linewidth=0.2, alpha=0.5)
     for i in xiter_zoom:
-        ax2.plot(x[iz, :, i], y[iz, :, i], 'b-', linewidth=0.3)
-        ax3.plot(x[iz, :, i], y[iz, :, i], 'b-', linewidth=0.3)
+        ax2.plot(x[iz, :, i], y[iz, :, i], 'b-', linewidth=0.2, alpha=0.5)
+        ax3.plot(x[iz, :, i], y[iz, :, i], 'b-', linewidth=0.2, alpha=0.5)
     ax2.set_aspect('equal', adjustable='box')
     ax3.set_aspect('equal', adjustable='box')
     
-    ax2.set_xlim((0, 0.04))
-    ax2.set_ylim((-0.02, 0.02))
-    ax3.set_xlim((0.09, 0.13))
-    ax3.set_ylim((-0.01, 0.03))
+    ax2.set_xlim(zoom1_xlim)
+    ax2.set_ylim(zoom1_ylim)
+    ax3.set_xlim(zoom2_xlim)
+    ax3.set_ylim(zoom2_ylim)
     ax1.grid(False)
     ax2.grid(False)
     ax3.grid(False)
+    ax1.axis('off')
+
+    # Add a red border to ax2
+    for spine in ax2.spines.values():
+        spine.set_edgecolor('red')
+        spine.set_linewidth(2)
+
+    # Add a green border to ax3
+    for spine in ax3.spines.values():
+        spine.set_edgecolor('green')
+        spine.set_linewidth(2)
+
+    ax2.set_xticks([])
+    ax2.set_yticks([])
+    ax2.set_xticklabels([])
+    ax2.set_yticklabels([])
+    ax3.set_xticks([])
+    ax3.set_yticks([])
+    ax3.set_xticklabels([])
+    ax3.set_yticklabels([])
+
     plt.tight_layout()
+    plt.savefig('mesh_zoom_lf.pdf')
     plt.show()
-    
+
     # Show the grid in center YZ plane
     current_width = 3 * figwidth * cm * fac_fig
     fig2 = plt.figure(4, figsize=[1.0 * current_width, 0.40 * current_width])
