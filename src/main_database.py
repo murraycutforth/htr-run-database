@@ -47,6 +47,7 @@ def main():
         CreateDatabaseBatchV18(),
         CreateDatabaseBatchV19(),
         CreateDatabaseBatchV20(),
+        CreateDatabaseBatchV21(),
     ]
 
     # Add assertions here to check database never changes
