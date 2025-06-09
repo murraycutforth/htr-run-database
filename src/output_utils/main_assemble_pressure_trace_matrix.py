@@ -65,7 +65,7 @@ def get_average_pressure_trace(probe_ind_to_df):
             iter_time_set = iter_time
         else:
             if not iter_time.equals(iter_time_set):
-                raise ValueError("Mismatch in 'Iter' and 'Time' columns across DataFrames")
+                raise AssertionError(f"Mismatch in 'Iter' and 'Time' columns across DataFrames\n{iter_time_set}\n{iter_time}")
 
     # Compute the average pressure trace
     avg_pressure_trace = pd.DataFrame()
