@@ -6,7 +6,7 @@ set -e
 USER=cutforth1
 HOST=lassen.llnl.gov
 BATCH=$1
-RUN_BATCH_DIR="/p/gpfs1/cutforth1/PSAAP/runs_batch_${BATCH}/[0-9][0-9][0-9][0-9]"
+RUN_BATCH_DIR="/p/gpfs1/cutforth1/PSAAP/runs_batch_${BATCH}/[0-9][0-9][0-9]*"
 
 # Check that BATCH is 4-digit number
 if [[ $BATCH =~ ^[0-9]{4}$ ]]; then
