@@ -334,6 +334,7 @@ def main():
 
         # Add in copies of common scripts we will use
         shutil.copy('scripts/jobscripts/run-htr-with-restarts_lsf.sh', run_dir)
+        shutil.copy('scripts/jobscripts/run-htr-once_lsf.sh', run_dir)
         shutil.copy('src/prepare_restart_run.py', run_dir)
         shutil.copy('scripts/utils/organize-htr.sh', run_dir)
 
@@ -345,12 +346,18 @@ def main():
         st = os.stat(run_dir / 'run-htr-with-restarts_lsf.sh')
         os.chmod(run_dir / 'run-htr-with-restarts_lsf.sh', st.st_mode | stat.S_IEXEC)
 
+        st = os.stat(run_dir / 'run-htr-once_lsf.sh')
+        os.chmod(run_dir / 'run-htr-once_lsf.sh', st.st_mode | stat.S_IEXEC)
+
         st = os.stat(run_dir / 'organize-htr.sh')
         os.chmod(run_dir / 'organize-htr.sh', st.st_mode | stat.S_IEXEC)
 
     shutil.copy('scripts/jobscripts/start_many_runs_lsf.sh', outdir_base)
+    shutil.copy('scripts/jobscripts/start_many_runs_lsf_once.sh', outdir_base)
     st = os.stat(outdir_base / 'start_many_runs_lsf.sh')
     os.chmod(outdir_base / 'start_many_runs_lsf.sh', st.st_mode | stat.S_IEXEC)
+    st = os.stat(outdir_base / 'start_many_runs_lsf_once.sh')
+    os.chmod(outdir_base / 'start_many_runs_lsf_once.sh', st.st_mode | stat.S_IEXEC)
 
 
 if __name__ == "__main__":
