@@ -1858,3 +1858,13 @@ class CreateDatabaseBatchV26(CreateDatabaseActiveLearningBatch):
 class CreateDatabaseBatchV27(CreateDatabaseActiveLearningBatch):
     def __init__(self):
         super().__init__(batch_id=27, filename='X_hf_new_1.npy')
+
+
+class CreateDatabaseBatchV28(CreateDatabaseActiveLearningBatch):
+    def __init__(self):
+        super().__init__(batch_id=28, filename='X_lf_new_2.npy')
+
+
+class CreateDatabaseBatchV29(CreateDatabaseActiveLearningBatch):
+    def __init__(self):
+        super().__init__(batch_id=29, filename='X_hf_new_2.npy')
