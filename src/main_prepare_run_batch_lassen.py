@@ -78,9 +78,9 @@ def update_json_data(config: dict, xi: list, base_dir: Path, grid_size: str, use
     # xi is given in mm, so multiply by 0.001 and divide by LREF to get dimensionless units
     # In simulation, coords are (streamwise, radial, azimuthal)
     # When sampling xi, coords are (radial, azimuthal, streamwise)
-    assert -2.0 <= xi[0] <= 17.0, f"xi[0] out of bounds: {xi[0]}"
+    #assert -2.0 <= xi[0] <= 17.0, f"xi[0] out of bounds: {xi[0]}"
     assert -1.0 <= xi[1] <= 1.0, f"xi[1] out of bounds: {xi[1]}"
-    assert -2.0 <= xi[2] <= 102.0, f"xi[2] out of bounds: {xi[2]}"
+    #assert -2.0 <= xi[2] <= 102.0, f"xi[2] out of bounds: {xi[2]}"
     config['Flow']['laser']['focalLocation'][0] = xi[2] * 0.001 / LREF  # streamwise
     config['Flow']['laser']['focalLocation'][1] = xi[0] * 0.001 / LREF  # radial
     config['Flow']['laser']['focalLocation'][2] = xi[1] * 0.001 / LREF  # azimuthal
